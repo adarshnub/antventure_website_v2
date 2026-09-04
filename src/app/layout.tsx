@@ -10,7 +10,19 @@ const display = Newsreader({ subsets: ["latin"], variable: "--font-display", dis
 const sans = Manrope({ subsets: ["latin"], variable: "--font-sans", display: "swap" });
 const mono = IBM_Plex_Mono({ subsets: ["latin"], variable: "--font-mono", weight: ["400", "500"], display: "swap" });
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL ?? "https://antventure.ai";
+function resolveSiteUrl(value: string | undefined) {
+  const fallback = "https://antventure.ai";
+  const candidate = value?.trim();
+
+  try {
+    const url = new URL(candidate || fallback);
+    return ["http:", "https:"].includes(url.protocol) ? url.origin : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+const siteUrl = resolveSiteUrl(process.env.NEXT_PUBLIC_SITE_URL);
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
