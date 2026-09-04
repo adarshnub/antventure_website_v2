@@ -10,7 +10,7 @@ const chapters = [
     id: "collective",
     number: "01",
     eyebrow: "Ant Venture / AI transformation",
-    title: <h1>Collective Intelligence,<br /><em>Engineered for Growth.</em></h1>,
+    title: <h1>Collective Intelligence<br /><em>Engineered for Growth.</em></h1>,
     copy: "We coordinate AI, people and process into one operating system—so intelligence produces movement, not another dashboard.",
     actions: <><Link className="hero-action primary" href="#capabilities">See what we build <span>↓</span></Link><TrackedLink className="hero-action secondary" href="/contact-sales" eventName="request_demo_clicked" eventData={{ placement: "scroll_hero_intro" }}>Talk to us <span>↗</span></TrackedLink></>,
   },

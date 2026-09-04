@@ -35,6 +35,12 @@ powershell -NoProfile -File scripts/generate-ark-videos.ps1
 powershell -NoProfile -File scripts/prepare-scroll-videos.ps1
 ```
 
+The homepage scroll film has its own generator because it is storyboarded around four pinned chapters:
+
+```bash
+powershell -NoProfile -File scripts/generate-hero-scroll-video.ps1
+```
+
 Both delivery formats use a six-frame GOP at 24 fps (a seek point every 0.25 seconds), no B-frames, and low-reference encoding for responsive scroll scrubbing. The generated posters are the reduced-motion and video-failure fallbacks.
 
 ## Launch checks
