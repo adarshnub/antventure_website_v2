@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { HomeHero } from "@/components/home-hero";
-import { TransformationExplorer } from "@/components/transformation-explorer";
+import { RoleXDemo } from "@/components/role-x-demo";
 import { ClientStrip } from "@/components/client-strip";
 import { Reveal } from "@/components/reveal";
 import { CtaBand } from "@/components/cta-band";
@@ -41,7 +41,7 @@ export default function Home() {
         </div>
       </section>
 
-      <TransformationExplorer immersive />
+      <RoleXDemo />
 
       <section className="rolex-section section-pad" data-galaxy-stop>
         <div className="shell rolex-grid">

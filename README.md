@@ -45,31 +45,35 @@ case studies are measured automatically. Styling is scoped to `.galaxy-site` in
   reporting four or fewer logical processors; rendering is capped at 30 fps there.
 - Desktop rendering targets 60 fps, caps pixel ratio at 2 (1.5 on mobile), and reduces resolution
   after sustained slow frames. These are rendering budgets, not benchmark results.
-- Motion pauses while hidden or offscreen, and can be paused by the visitor.
+- Motion pauses while hidden or offscreen and respects the system motion preference.
   Reduced-motion users start with a still frame. A server-rendered SVG remains
   available during loading, without WebGL, or after context loss.
 - No additional ambient, hero, or explorer WebGL contexts are created. GPU
   resources and event handlers are released when the shared backdrop unmounts.
   Route changes rebind the scene to the new page without restarting its animation.
 
-The **Explore the galaxy** control opens an optional observatory on every page.
-Visitors can switch between four formations, disperse the stars with a slider,
-and pause the scene. It reuses the existing three draw calls; no new canvas,
-models, textures, dependencies, or video downloads are added. The native dialog
-keeps keyboard focus inside, supports Escape, and restores focus and the page's
-scroll position when closed. With reduced motion, controls render a single new
-still frame rather than starting an animation.
+The floating galaxy controls and observatory have been removed. The scene remains
+decorative and does not obstruct content or navigation.
+
+The ROLE:X plug-and-play demonstration at `/#explore` uses vector connections,
+an animated wireframe core, four selectable example inputs, and a simulated human
+approval step before outgoing signals activate. Rules, documents, and templates
+anchor the diagram. It replaces the previous multi-step transformation selector
+without adding a WebGL context. Example selection is passed into the contact URL;
+no real messages are sent and no customer systems are connected. Diagram motion
+pauses offscreen and is disabled for reduced-motion users.
 
 Selected glass cards have a restrained cursor reflection and depth response.
 These use delegated pointer events and CSS transitions, not another animation
-loop, and are disabled for touch, reduced motion, or the visitor's pause setting.
+loop, and are disabled for touch and reduced motion.
 Page entrances fade gently while the shared galaxy stays mounted.
 
 `tests/e2e/galaxy.spec.ts` verifies rendering, shared canvas, page-section motion,
-pause/resume, scroll explosion/reformation, observatory keyboard/shape controls,
+system motion preferences, scroll explosion/reformation, removed floating controls,
 surface interaction, persistent canvas across routes, and
 reduced-motion/no-WebGL behavior. It also saves screenshots in
-the ignored `test-results` directory for visual review.
+the ignored `test-results` directory for visual review. `site.spec.ts` checks
+all four demo inputs, human approval, and demo-to-contact context.
 
 ## Legacy cinematic media
 

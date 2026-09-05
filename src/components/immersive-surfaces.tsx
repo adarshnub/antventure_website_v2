@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 const cards = ".proof-card, .team-grid article, .process-cards li, .principle-grid article, .page-hero-intro";
 
 /** Delegated, event-driven polish: no per-card listeners or continuous RAF. */
-export function ImmersiveSurfaces({ paused }: { paused: boolean }) {
+export function ImmersiveSurfaces() {
   const pathname = usePathname();
   useEffect(() => {
     const motion = matchMedia("(prefers-reduced-motion: reduce)");
@@ -21,10 +21,10 @@ export function ImmersiveSurfaces({ paused }: { paused: boolean }) {
     };
     const sync = () => {
       clear();
-      if (motion.matches || paused) entrance?.cancel();
+      if (motion.matches) entrance?.cancel();
     };
     const move = (event: PointerEvent) => {
-      if (motion.matches || paused || !pointer.matches || event.pointerType === "touch") return;
+      if (motion.matches || !pointer.matches || event.pointerType === "touch") return;
       const card = event.target instanceof Element ? event.target.closest<HTMLElement>(cards) : null;
       if (card !== active) clear();
       if (!card) return;
@@ -38,7 +38,7 @@ export function ImmersiveSurfaces({ paused }: { paused: boolean }) {
       card.dataset.surfaceActive = "true";
     };
     // Animate only the entrance, never the persistent canvas or sticky shell.
-    if (!motion.matches && !paused) {
+    if (!motion.matches) {
       entrance = document.querySelector("main")?.animate([{ opacity: .65 }, { opacity: 1 }], { duration: 360, easing: "ease-out" });
     }
     document.addEventListener("pointermove", move, { passive: true });
@@ -56,6 +56,6 @@ export function ImmersiveSurfaces({ paused }: { paused: boolean }) {
       motion.removeEventListener("change", sync);
       pointer.removeEventListener("change", clear);
     };
-  }, [pathname, paused]);
+  }, [pathname]);
   return null;
 }

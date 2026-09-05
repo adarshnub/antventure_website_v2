@@ -6,6 +6,7 @@ const vertexShader = `
   uniform float uExplosion;
   uniform float uShape;
   uniform float uRatio;
+  uniform float uDemoBlend;
   uniform float uPointerStrength;
   uniform vec2 uWake;
   uniform vec2 uPointer;
@@ -13,6 +14,7 @@ const vertexShader = `
   attribute vec3 aRing;
   attribute vec3 aHelix;
   attribute vec3 aConstellation;
+  attribute vec3 aOrb;
   attribute float aSize;
   attribute float aSeed;
   varying vec3 vColor;
@@ -22,6 +24,7 @@ const vertexShader = `
     p = mix(p, aHelix, smoothstep(1.0, 2.0, uShape));
     p = mix(p, aConstellation, smoothstep(2.0, 3.0, uShape));
     p += aScatter * uExplosion;
+    p = mix(p, aOrb, uDemoBlend);
     p.y += sin(uTime * 0.65 + aSeed * 6.28 + length(p.xz)) * 0.09;
     float orbit = uTime * 0.055 / (0.7 + length(position.xz) * 0.24);
     p.xz = mat2(cos(orbit), -sin(orbit), sin(orbit), cos(orbit)) * p.xz;
@@ -32,11 +35,13 @@ const vertexShader = `
     float distanceToCursor = length(delta);
     float influence = exp(-distanceToCursor * distanceToCursor * 12.0) * uPointerStrength;
     // A tangential gravity disturbance gives stars a fluid swirl, not a hard shove.
-    view.xy += (vec2(-delta.y, delta.x) * 0.8 - delta * 0.28 + uWake * 1.8) * influence;
+    view.xy += (vec2(-delta.y, delta.x) * 0.8 - delta * 0.28 + uWake * 1.8) * influence * mix(1.0, 0.12, uDemoBlend);
     gl_Position = projectionMatrix * view;
     gl_PointSize = clamp(aSize * uRatio * (14.0 / max(3.0, -view.z)) * (1.0 + influence * 0.5), 1.5, 18.0);
-    vColor = color;
+    gl_PointSize *= mix(1.0, 0.48, uDemoBlend);
+    vColor = mix(color, vec3(0.3, 0.95, 0.72), uDemoBlend * 0.8);
     vLight = (0.76 + 0.24 * sin(aSeed * 120.0 + uTime * (0.6 + aSeed))) * (1.0 + influence * 0.7);
+    vLight *= mix(1.0, 0.18 + step(0.8, aSeed) * 0.35, uDemoBlend);
   }
 `;
 const fragmentShader = `
@@ -88,6 +93,7 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
   const ring = new Float32Array(count * 3);
   const helix = new Float32Array(count * 3);
   const constellation = new Float32Array(count * 3);
+  const orb = new Float32Array(count * 3);
   const colors = new Float32Array(count * 3);
   const sizes = new Float32Array(count);
   const seeds = new Float32Array(count);
@@ -125,6 +131,10 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
     constellation[i * 3] = (cluster - 1) * 3 + Math.sin(phi) * Math.cos(theta) * clusterSize;
     constellation[i * 3 + 1] = Math.cos(phi) * clusterSize + Math.sin(cluster * 2) * 0.6;
     constellation[i * 3 + 2] = Math.sin(phi) * Math.sin(theta) * clusterSize;
+    const orbRadius = .75 + (i % 17) / 17 * .25;
+    orb[i * 3] = Math.sin(phi) * Math.cos(theta) * orbRadius;
+    orb[i * 3 + 1] = Math.cos(phi) * orbRadius;
+    orb[i * 3 + 2] = Math.sin(phi) * Math.sin(theta) * orbRadius;
     starColor.copy(inside).lerp(middle, Math.min(1, r / 2.1));
     if (r > 2.1) starColor.lerp(outside, (r - 2.1) / 3.3);
     if (random() > 0.985) starColor.set("#ffffff");
@@ -140,10 +150,11 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
   geometry.setAttribute("aRing", new THREE.BufferAttribute(ring, 3));
   geometry.setAttribute("aHelix", new THREE.BufferAttribute(helix, 3));
   geometry.setAttribute("aConstellation", new THREE.BufferAttribute(constellation, 3));
+  geometry.setAttribute("aOrb", new THREE.BufferAttribute(orb, 3));
   geometry.setAttribute("aSize", new THREE.BufferAttribute(sizes, 1));
   geometry.setAttribute("aSeed", new THREE.BufferAttribute(seeds, 1));
   const uniforms = {
-    uTime: { value: 0 }, uExplosion: { value: 0 }, uShape: { value: 0 }, uRatio: { value: 1 },
+    uTime: { value: 0 }, uExplosion: { value: 0 }, uShape: { value: 0 }, uRatio: { value: 1 }, uDemoBlend: { value: 0 },
     uPointer: { value: new THREE.Vector2(9, 9) }, uPointerStrength: { value: 0 }, uWake: { value: new THREE.Vector2() },
   };
   const material = new THREE.ShaderMaterial({ uniforms, vertexShader, fragmentShader, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending });
@@ -183,9 +194,9 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
   const tailGeometry = new THREE.BufferGeometry();
   tailGeometry.setAttribute("position", new THREE.BufferAttribute(tailPositions, 3));
   const tailMaterial = new THREE.ShaderMaterial({
-    uniforms: { uTime: uniforms.uTime, uRatio: uniforms.uRatio, uExplosion: uniforms.uExplosion },
+    uniforms: { uTime: uniforms.uTime, uRatio: uniforms.uRatio, uExplosion: uniforms.uExplosion, uDemoBlend: uniforms.uDemoBlend },
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-    vertexShader: `uniform float uTime; uniform float uRatio; uniform float uExplosion;
+    vertexShader: `uniform float uTime; uniform float uRatio; uniform float uExplosion; uniform float uDemoBlend;
       varying vec3 vColor; varying float vLight;
       void main() {
         float trail = position.x;
@@ -197,7 +208,7 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
         gl_Position = projectionMatrix * view;
         gl_PointSize = (1.5 + 4.0 * pow(1.0-trail, 3.0)) * uRatio * 14.0 / max(3.0, -view.z);
         vColor = mix(vec3(0.25, 0.76, 1.0), vec3(1.0, 0.85, 0.56), mod(orbit, 2.0));
-        vLight = pow(1.0-trail, 2.0) * 1.5;
+        vLight = pow(1.0-trail, 2.0) * 1.5 * (1.0 - uDemoBlend);
       }`, fragmentShader,
   });
   const tails = new THREE.Points(tailGeometry, tailMaterial);
@@ -216,18 +227,25 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
   let disposed = false;
   let pointerActive = false;
   let slowFrames = 0;
-  let focused = false;
-  let focusBlend = 0;
-  let formation = 0;
-  let easedFormation = 0;
-  let dispersion = 0;
-  let easedDispersion = 0;
+  let demo: HTMLElement | null = null;
+  let orbX = 0;
+  let orbY = 0;
+  let orbSize = 0;
+  let targetDemoBlend = 0;
   let ratio = Math.min(devicePixelRatio || 1, lowPower ? 1.5 : 2);
   const pointer = new THREE.Vector2(0, 0);
   const easedPointer = new THREE.Vector2(0, 0);
   const trailingPointer = new THREE.Vector2(0, 0);
 
   function measure() {
+    demo = main.querySelector<HTMLElement>(".role-demo");
+    const core = demo?.querySelector(".role-intelligence-core");
+    if (core) {
+      const rect = core.getBoundingClientRect();
+      orbX = rect.left + rect.width / 2;
+      orbY = rect.top + scrollY + rect.height / 2;
+      orbSize = rect.width;
+    }
     const hero = main.querySelector<HTMLElement>(".home-hero");
     const start = main.getBoundingClientRect().top + scrollY;
     if (hero) {
@@ -252,6 +270,11 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
     while (index < stops.length - 2 && scrollY >= stops[index + 1]) index++;
     const part = THREE.MathUtils.clamp((scrollY - stops[index]) / Math.max(1, stops[index + 1] - stops[index]), 0, 1);
     targetJourney = Math.min(views.length - 1, index + part);
+    const orbViewportY = orbY - scrollY;
+    targetDemoBlend = demo && !paused
+      ? THREE.MathUtils.smoothstep((innerHeight * 1.2 - orbViewportY) / (innerHeight * .5), 0, 1)
+        * THREE.MathUtils.smoothstep((orbViewportY + innerHeight * .1) / (innerHeight * .35), 0, 1)
+      : 0;
   }
   function resize() {
     camera.aspect = innerWidth / innerHeight;
@@ -278,9 +301,6 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
     lastRender = time;
     elapsed += dt;
     const easing = still ? 1 : 1 - Math.exp(-dt * 5);
-    focusBlend += ((focused ? 1 : 0) - focusBlend) * easing;
-    easedFormation += (formation - easedFormation) * easing;
-    easedDispersion += (dispersion - easedDispersion) * easing;
     journey += (targetJourney - journey) * easing;
     easedPointer.lerp(pointer, easing);
     trailingPointer.lerp(easedPointer, still ? 1 : 1 - Math.exp(-dt * 2.2));
@@ -294,15 +314,13 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
     group.scale.setScalar(lerp(from.scale, to.scale, mix) * (compact.matches ? 0.63 : 1));
     uniforms.uExplosion.value = lerp(from.explosion, to.explosion, mix) + Math.sin(mix * Math.PI) * (from.shape !== to.shape ? 1.25 : 0.3);
     uniforms.uShape.value = lerp(from.shape, to.shape, mix);
-    // The observatory reuses this scene, easing away from and back into the story.
-    group.position.multiplyScalar(1 - focusBlend);
-    group.position.y += focusBlend * (compact.matches ? 1.6 : 0.6);
-    group.rotation.x = lerp(group.rotation.x, .82 + easedPointer.y * .28, focusBlend);
-    group.rotation.z = lerp(group.rotation.z, -.3, focusBlend);
-    group.rotation.y += easedPointer.x * .28 * focusBlend;
-    group.scale.setScalar(lerp(group.scale.x, compact.matches ? .58 : .95, focusBlend));
-    uniforms.uShape.value = lerp(uniforms.uShape.value, easedFormation, focusBlend);
-    uniforms.uExplosion.value = lerp(uniforms.uExplosion.value, easedDispersion, focusBlend);
+    uniforms.uDemoBlend.value = lerp(uniforms.uDemoBlend.value, targetDemoBlend, easing);
+    const gathering = uniforms.uDemoBlend.value;
+    const worldHeight = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z;
+    group.position.x = lerp(group.position.x, (orbX / innerWidth - .5) * worldHeight * camera.aspect, gathering);
+    group.position.y = lerp(group.position.y, (.5 - (orbY - scrollY) / innerHeight) * worldHeight, gathering);
+    group.scale.setScalar(lerp(group.scale.x, orbSize * .39 / innerHeight * worldHeight, gathering));
+    if (demo) demo.style.setProperty("--orb-formed", gathering.toFixed(3));
     uniforms.uTime.value = elapsed;
     uniforms.uPointer.value.copy(easedPointer);
     uniforms.uPointerStrength.value = lerp(uniforms.uPointerStrength.value, pointerActive ? 1 : 0, easing);
@@ -316,12 +334,12 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
     canvas.dataset.particles = String(count + fieldCount + tailCount);
     canvas.dataset.shape = uniforms.uShape.value.toFixed(2);
     canvas.dataset.explosion = uniforms.uExplosion.value.toFixed(2);
-    canvas.dataset.focus = focusBlend.toFixed(2);
+    canvas.dataset.orbFormation = gathering.toFixed(2);
   }
   function updateLoop() {
     renderer.setAnimationLoop(null);
     previousTime = 0;
-    if (!paused && !document.hidden && (inView || focused) && !lost && !disposed) renderer.setAnimationLoop((time) => render(time));
+    if (!paused && !document.hidden && inView && !lost && !disposed) renderer.setAnimationLoop((time) => render(time));
     canvas.dataset.motion = paused ? "paused" : "running";
   }
   function move(event: PointerEvent) {
@@ -330,9 +348,9 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
     pointerActive = true;
   }
   function leave() { pointerActive = false; pointer.set(0, 0); }
-  function contextLost(event: Event) { event.preventDefault(); lost = true; canvas.dataset.ready = "false"; updateLoop(); }
+  function contextLost(event: Event) { event.preventDefault(); lost = true; canvas.dataset.ready = "false"; demo?.style.removeProperty("--orb-formed"); updateLoop(); }
   function contextRestored() { lost = false; resize(); updateLoop(); }
-  function motionChanged() { paused = reduced.matches; if (paused) render(0, true); updateLoop(); }
+  function motionChanged() { paused = reduced.matches; updateScroll(); if (paused) render(0, true); updateLoop(); }
   const observer = new IntersectionObserver(([entry]) => { inView = entry.isIntersecting; updateLoop(); });
   observer.observe(main);
   const resizeObserver = new ResizeObserver(measure);
@@ -349,19 +367,9 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
   render(0, true);
   updateLoop();
   return {
-    setPaused(value: boolean) { paused = value; updateLoop(); },
-    setFocus(value: boolean) {
-      focused = value;
-      leave();
-      if (paused) render(0, true);
-      updateLoop();
-    },
-    setFormation(shape: number, spread: number) {
-      formation = THREE.MathUtils.clamp(shape, 0, 3);
-      dispersion = THREE.MathUtils.clamp(spread, 0, 1.5);
-      if (paused) render(0, true);
-    },
     setPage(page: HTMLElement) {
+      demo?.style.removeProperty("--orb-formed");
+      uniforms.uDemoBlend.value = 0;
       observer.unobserve(main);
       resizeObserver.unobserve(main);
       main = page;
@@ -371,6 +379,7 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
       if (paused) { journey = targetJourney; render(0, true); }
     },
     dispose() {
+      demo?.style.removeProperty("--orb-formed");
       disposed = true;
       renderer.setAnimationLoop(null);
       observer.disconnect();
