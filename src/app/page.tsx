@@ -6,7 +6,6 @@ import { ClientStrip } from "@/components/client-strip";
 import { Reveal } from "@/components/reveal";
 import { CtaBand } from "@/components/cta-band";
 import { TrackedLink } from "@/components/tracked-link";
-import { GalaxyBackdrop } from "@/components/galaxy-backdrop";
 import { audiences, capabilities, caseStudies, deliverySteps } from "@/lib/content";
 
 export const metadata: Metadata = { alternates: { canonical: "/" } };
@@ -14,7 +13,6 @@ export const metadata: Metadata = { alternates: { canonical: "/" } };
 export default function Home() {
   return (
     <main id="main" className="galaxy-home">
-      <GalaxyBackdrop />
       <HeroScrollExperience />
 
       <ClientStrip />

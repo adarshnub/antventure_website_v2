@@ -28,25 +28,30 @@ npm run test:e2e
 
 ## Continuous galaxy experience
 
-The homepage uses one fixed WebGL canvas across the hero, system, explorer, product,
-and proof sections. `src/lib/galaxy-renderer.ts` contains the procedural spiral,
-GPU cursor interaction, exploded arm positions, and scroll camera poses. Section
-markers (`data-galaxy-stop`) match the poses in document order. Styling is scoped
-to `.galaxy-home` in `src/app/galaxy.css`.
+The shared layout uses one persistent WebGL canvas across all marketing and legal
+pages. It stays mounted during client navigation. `src/lib/galaxy-renderer.ts`
+contains the spiral, orbital ring, double helix, constellation morph targets,
+cursor wake, comet trails, and scroll camera poses. Homepage section markers
+(`data-galaxy-stop`) match the poses in document order; inner-page sections and
+case studies are measured automatically. Styling is scoped to `.galaxy-site` in
+`src/app/galaxy.css`.
 
-- 30,000 galaxy points plus 1,200 background stars on desktop, in two draw calls.
-- 10,000 points plus 400 stars on small screens, data-saving connections, or devices
+- 30,000 galaxy points plus 1,200 background stars and 288 comet-tail points on
+  desktop, in three draw calls. All morph targets are uploaded once to GPU buffers.
+- 10,000 points plus 400 stars and 144 comet-tail points on small screens, data-saving connections, or devices
   reporting four or fewer logical processors; rendering is capped at 30 fps there.
-- Desktop rendering targets 60 fps, caps pixel ratio at 1.5, and reduces resolution
+- Desktop rendering targets 60 fps, caps pixel ratio at 2 (1.5 on mobile), and reduces resolution
   after sustained slow frames. These are rendering budgets, not benchmark results.
 - Motion pauses while hidden or offscreen, and can be paused by the visitor.
   Reduced-motion users start with a still frame. A server-rendered SVG remains
   available during loading, without WebGL, or after context loss.
-- The homepage does not download video assets or create additional ambient/explorer
-  WebGL contexts. GPU resources and event handlers are released on navigation.
+- No additional ambient, hero, or explorer WebGL contexts are created. GPU
+  resources and event handlers are released when the shared backdrop unmounts.
+  Route changes rebind the scene to the new page without restarting its animation.
 
 `tests/e2e/galaxy.spec.ts` verifies rendering, shared canvas, chapter controls,
-pause/resume, and reduced-motion/no-WebGL behavior. It also saves screenshots in
+pause/resume, scroll explosion/reformation, persistent canvas across routes, and
+reduced-motion/no-WebGL behavior. It also saves screenshots in
 the ignored `test-results` directory for visual review.
 
 ## Legacy cinematic media

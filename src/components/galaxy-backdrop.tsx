@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import type { createGalaxy } from "@/lib/galaxy-renderer";
 
 // Deterministic SVG is visible immediately, and remains if WebGL cannot start.
@@ -20,6 +21,7 @@ function GalaxyFallback() {
 }
 
 export function GalaxyBackdrop() {
+  const pathname = usePathname();
   const canvas = useRef<HTMLCanvasElement>(null);
   const controller = useRef<ReturnType<typeof createGalaxy> | null>(null);
   const [paused, setPaused] = useState(false);
@@ -32,7 +34,7 @@ export function GalaxyBackdrop() {
     // Import after hydration; no models, textures or videos need downloading.
     import("@/lib/galaxy-renderer").then(({ createGalaxy }) => {
       if (cancelled || !canvas.current) return;
-      const main = canvas.current.closest("main");
+      const main = document.querySelector("main");
       if (!main) return;
       try {
         controller.current = createGalaxy(canvas.current, main);
@@ -42,6 +44,10 @@ export function GalaxyBackdrop() {
     }).catch(() => { /* Keep the static galaxy and all content usable. */ });
     return () => { cancelled = true; reduced.removeEventListener("change", sync); controller.current?.dispose(); controller.current = null; };
   }, []);
+  useEffect(() => {
+    const main = document.querySelector("main");
+    if (main) controller.current?.setPage(main);
+  }, [pathname]);
   return <>
     <div className="galaxy-backdrop" aria-hidden="true"><GalaxyFallback /><canvas ref={canvas} className="galaxy-canvas" /><div className="galaxy-vignette" /></div>
     {available && <button type="button" className="galaxy-motion" aria-pressed={paused} onClick={() => { controller.current?.setPaused(!paused); setPaused(!paused); }}><span aria-hidden="true">{paused ? "▷" : "Ⅱ"}</span>{paused ? "Resume motion" : "Pause motion"}</button>}

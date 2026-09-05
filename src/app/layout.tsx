@@ -3,7 +3,7 @@ import { IBM_Plex_Mono, Manrope, Newsreader } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
-import { AmbientFieldLoader } from "@/components/ambient-field-loader";
+import { GalaxyBackdrop } from "@/components/galaxy-backdrop";
 import "./globals.css";
 import "./galaxy.css";
 
@@ -34,7 +34,7 @@ export const metadata: Metadata = {
   twitter: { card: "summary_large_image", title: "Ant Venture — Collective Intelligence", description: "Practical AI transformation, structured for real work.", images: ["/opengraph-image"] },
 };
 
-export const viewport: Viewport = { themeColor: "#071b2b", colorScheme: "light" };
+export const viewport: Viewport = { themeColor: "#020610", colorScheme: "dark" };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
   const organization = {
@@ -48,8 +48,8 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   };
   return (
     <html lang="en" data-scroll-behavior="smooth" className={`${display.variable} ${sans.variable} ${mono.variable}`}>
-      <body>
-        <AmbientFieldLoader />
+      <body className="galaxy-site">
+        <GalaxyBackdrop />
         <SiteHeader />
         {children}
         <SiteFooter />
