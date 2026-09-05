@@ -16,6 +16,22 @@
 .galaxy-vignette { background: linear-gradient(90deg, rgba(2,6,16,.38), transparent 55%), linear-gradient(0deg, rgba(2,6,16,.38), transparent 20%, transparent 85%, rgba(2,6,16,.4)); }
 .galaxy-site main > section, .galaxy-site .cta-band, .galaxy-site .hero-scroll { background: transparent; backdrop-filter: none; }
 .galaxy-site main { background: transparent; }
+.galaxy-site .home-hero { min-height: 100svh; position: relative; display: flex; align-items: stretch; background: linear-gradient(90deg, #020610a8, #02061055 45%, transparent 78%); }
+.home-hero-shell { position: relative; display: flex; flex-direction: column; justify-content: center; align-items: flex-start; padding-top: 170px; padding-bottom: 130px; }
+.home-hero h1 { margin: 0; font-size: clamp(48px, 4.8vw, 84px); line-height: 1.04; letter-spacing: -.065em; font-weight: 400; }
+.home-hero h1 em { font-family: var(--display); color: #a6f5e2; font-weight: 400; letter-spacing: -.055em; }
+.home-hero-copy { max-width: 630px; margin: 32px 0 28px; color: #bbc9d8; font-size: 16px; line-height: 1.7; text-shadow: 0 2px 16px #020610; }
+.home-hero-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.home-hero-foot { position: absolute; bottom: 68px; left: 0; right: 0; display: flex; justify-content: space-between; gap: 20px; padding-top: 20px; border-top: 1px solid var(--line); font: 10px var(--mono); color: #a2b3c7; }
+.home-hero-foot a { display: flex; gap: 24px; color: #c8e9e5; }
+@media (max-width: 820px) {
+  .home-hero-shell { padding-top: 145px; padding-bottom: 145px; }
+  .home-hero h1 { font-size: clamp(40px, 9.8vw, 68px); }
+  .home-hero-copy { font-size: 14px; margin-top: 24px; }
+  .home-hero-foot { bottom: 72px; font-size: 8px; gap: 10px; }
+  .home-hero-foot a { gap: 10px; }
+  .galaxy-site .home-hero { background: linear-gradient(0deg, #020610dc, #02061090 50%, transparent); }
+}
 .galaxy-site .hero-scroll { height: 390svh; }
 .galaxy-site .hero-scroll-stage { min-height: 650px; }
 .galaxy-site .hero-scroll-shade { background: linear-gradient(90deg, rgba(2,6,16,.68) 0%, rgba(2,6,16,.46) 33%, rgba(2,6,16,.08) 57%, transparent 75%); }

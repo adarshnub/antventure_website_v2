@@ -8,25 +8,20 @@ test("primary pages render and navigate", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Structure before");
 });
 
-test("hero scroll reveals products, ROLE:X and contact actions", async ({ page }) => {
+test("hero is a single opening section with direct actions", async ({ page }) => {
   await page.goto("/");
-  const hero = page.locator(".hero-scroll");
+  const hero = page.locator(".home-hero");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Collective Intelligence");
-  await hero.evaluate((element) => {
-    const section = element as HTMLElement;
-    window.scrollTo(0, section.offsetTop + (section.offsetHeight - window.innerHeight) * .34);
-  });
-  await expect(page.getByRole("heading", { name: /AI that moves work/i })).toBeVisible();
-  await hero.evaluate((element) => {
-    const section = element as HTMLElement;
-    window.scrollTo(0, section.offsetTop + (section.offsetHeight - window.innerHeight) * .62);
-  });
-  await expect(page.getByRole("heading", { name: /A silent AI inside/i })).toBeVisible();
-  await hero.evaluate((element) => {
-    const section = element as HTMLElement;
-    window.scrollTo(0, section.offsetTop + (section.offsetHeight - window.innerHeight) * .88);
-  });
-  await expect(page.getByRole("link", { name: /Start the conversation/i })).toBeVisible();
+  await expect(page.locator(".hero-scroll, .hero-scene-index")).toHaveCount(0);
+  expect(await hero.evaluate((element) => element.getBoundingClientRect().height / innerHeight)).toBeLessThan(1.4);
+  await expect(hero.getByRole("link", { name: "Request a demo" })).toHaveAttribute("href", "/contact-sales");
+  await hero.getByRole("link", { name: "Discover collective intelligence" }).click();
+  await expect(page.getByRole("heading", { name: "AI transformation is a system." })).toBeInViewport();
+  await expect(page.getByRole("heading", { level: 1 })).not.toBeInViewport();
+  await page.goto("/");
+  await hero.getByRole("link", { name: "Explore what we can automate" }).click();
+  await expect(page).toHaveURL(/#explore$/);
+  await expect(page.locator("#explore")).toBeInViewport();
 });
 
 test("explorer creates a contact-ready workflow", async ({ page }) => {

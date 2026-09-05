@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { HeroScrollExperience } from "@/components/hero-scroll-experience";
+import { HomeHero } from "@/components/home-hero";
 import { TransformationExplorer } from "@/components/transformation-explorer";
 import { ClientStrip } from "@/components/client-strip";
 import { Reveal } from "@/components/reveal";
@@ -13,11 +13,11 @@ export const metadata: Metadata = { alternates: { canonical: "/" } };
 export default function Home() {
   return (
     <main id="main" className="galaxy-home">
-      <HeroScrollExperience />
+      <HomeHero />
 
       <ClientStrip />
 
-      <section className="system section-pad" data-galaxy-stop>
+      <section className="system section-pad" id="system" data-galaxy-stop>
         <div className="shell">
           <Reveal className="section-heading">
             <div><p className="eyebrow">The operating idea · 00</p><h2>AI transformation<br />is a <em>system.</em></h2></div>

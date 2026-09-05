@@ -28,7 +28,10 @@ npm run test:e2e
 
 ## Continuous galaxy experience
 
-The shared layout uses one persistent WebGL canvas across all marketing and legal
+The homepage opens with one non-sticky hero: the concept-note headline,
+supporting copy, and direct workflow/demo links. There are no internal hero
+chapters or extended scroll track; products and ROLE:X remain in normal sections
+below. The shared layout uses one persistent WebGL canvas across all marketing and legal
 pages. It stays mounted during client navigation. `src/lib/galaxy-renderer.ts`
 contains the spiral, orbital ring, double helix, constellation morph targets,
 cursor wake, comet trails, and scroll camera poses. Homepage section markers
@@ -62,7 +65,7 @@ These use delegated pointer events and CSS transitions, not another animation
 loop, and are disabled for touch, reduced motion, or the visitor's pause setting.
 Page entrances fade gently while the shared galaxy stays mounted.
 
-`tests/e2e/galaxy.spec.ts` verifies rendering, shared canvas, chapter controls,
+`tests/e2e/galaxy.spec.ts` verifies rendering, shared canvas, page-section motion,
 pause/resume, scroll explosion/reformation, observatory keyboard/shape controls,
 surface interaction, persistent canvas across routes, and
 reduced-motion/no-WebGL behavior. It also saves screenshots in

@@ -228,11 +228,11 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
   const trailingPointer = new THREE.Vector2(0, 0);
 
   function measure() {
-    const hero = main.querySelector<HTMLElement>(".hero-scroll");
+    const hero = main.querySelector<HTMLElement>(".home-hero");
     const start = main.getBoundingClientRect().top + scrollY;
     if (hero) {
-      const heroDistance = Math.max(1, hero.offsetHeight - innerHeight);
-      stops = [start, start + heroDistance * 0.3, start + heroDistance * 0.6, start + heroDistance * 0.87];
+      // Real document sections drive the journey, not virtual hero chapters.
+      stops = [start];
       main.querySelectorAll<HTMLElement>("[data-galaxy-stop]").forEach((section) => {
         stops.push(section.getBoundingClientRect().top + scrollY - innerHeight * 0.25);
       });
