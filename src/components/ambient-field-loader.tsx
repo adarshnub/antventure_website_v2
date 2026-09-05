@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 
 const AmbientField = dynamic(() => import("@/components/ambient-field"), {
@@ -8,6 +9,11 @@ const AmbientField = dynamic(() => import("@/components/ambient-field"), {
 });
 
 export function AmbientFieldLoader() {
+  const pathname = usePathname();
+  return pathname === "/" ? null : <InnerPageAmbient />;
+}
+
+function InnerPageAmbient() {
   const aura = useRef<HTMLDivElement>(null);
   useEffect(() => {
     const node = aura.current;

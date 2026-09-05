@@ -1,6 +1,6 @@
 "use client";
 
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { TrackedLink } from "@/components/tracked-link";
@@ -44,44 +44,30 @@ const chapters = [
 
 export function HeroScrollExperience() {
   const root = useRef<HTMLElement>(null);
-  const video = useRef<HTMLVideoElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
+  const reducedMotion = useReducedMotion();
 
   useEffect(() => {
     const section = root.current;
-    const film = video.current;
-    if (!section || !film) return;
-    const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    if (!section) return;
     let target = 0;
-    let current = 0;
-    let frame = 0;
     let active = 0;
 
     const measure = () => {
       const rect = section.getBoundingClientRect();
       const distance = Math.max(1, section.offsetHeight - window.innerHeight);
       target = Math.min(1, Math.max(0, -rect.top / distance));
+      section.style.setProperty("--hero-scroll-progress", target.toFixed(4));
       const next = Math.min(chapters.length - 1, Math.floor(target * chapters.length));
       if (next !== active) {
         active = next;
         setActiveIndex(next);
       }
     };
-    const render = () => {
-      current += (target - current) * (reduced ? 1 : .14);
-      section.style.setProperty("--hero-scroll-progress", current.toFixed(4));
-      if (!reduced && Number.isFinite(film.duration) && film.duration > 0) {
-        const desired = current * Math.max(.01, film.duration - .04);
-        if (Math.abs(film.currentTime - desired) > .024) film.currentTime = desired;
-      }
-      frame = requestAnimationFrame(render);
-    };
     window.addEventListener("scroll", measure, { passive: true });
     window.addEventListener("resize", measure, { passive: true });
     measure();
-    frame = requestAnimationFrame(render);
     return () => {
-      cancelAnimationFrame(frame);
       window.removeEventListener("scroll", measure);
       window.removeEventListener("resize", measure);
     };
@@ -91,17 +77,11 @@ export function HeroScrollExperience() {
   return (
     <section ref={root} className={`hero-scroll hero-scene-${active.id}`} aria-label="Discover Ant Venture">
       <div className="hero-scroll-stage">
-        <div className="hero-scroll-media" aria-hidden="true">
-          <video ref={video} muted playsInline preload="auto" poster="/media/hero-scroll-system-poster.webp">
-            <source src="/media/hero-scroll-system.webm" type="video/webm" />
-            <source src="/media/hero-scroll-system.mp4" type="video/mp4" />
-          </video>
-        </div>
         <div className="hero-scroll-shade" />
         <div className="shell hero-scroll-shell">
-          <div className="hero-scroll-meta"><span>Dubai · UAE</span><span>Scroll to enter the system</span></div>
+          <div className="hero-scroll-meta"><span>Dubai · UAE</span><span>Move cursor · scroll to organize</span></div>
           <AnimatePresence mode="wait">
-            <motion.div className="hero-chapter" key={active.id} initial={{ opacity: 0, y: 55, filter: "blur(14px)" }} animate={{ opacity: 1, y: 0, filter: "blur(0px)" }} exit={{ opacity: 0, y: -35, filter: "blur(10px)" }} transition={{ duration: .58, ease: [.22, 1, .36, 1] }}>
+            <motion.div className="hero-chapter" key={active.id} initial={{ opacity: 0, y: reducedMotion ? 0 : 24 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: reducedMotion ? 0 : -18 }} transition={{ duration: reducedMotion ? 0 : .38, ease: [.22, 1, .36, 1] }}>
               <p className="hero-chapter-label"><span>{active.number}</span>{active.eyebrow}</p>
               {active.title}
               <p className="hero-chapter-copy">{active.copy}</p>
@@ -117,7 +97,12 @@ export function HeroScrollExperience() {
           <TrackedLink href="https://role-x.surge.sh/" target="_blank" rel="noreferrer" eventName="role_x_outbound" eventData={{ placement: "hero_shortcut" }}>ROLE:X</TrackedLink>
           <TrackedLink href="/contact-sales" eventName="request_demo_clicked" eventData={{ placement: "hero_shortcut" }}>Contact</TrackedLink>
         </nav>
-        <div className="hero-scene-index" aria-hidden="true">{chapters.map((chapter, index) => <span className={index === activeIndex ? "active" : ""} key={chapter.id}>{chapter.number}</span>)}</div>
+        <nav className="hero-scene-index" aria-label="Explore hero chapters">{chapters.map((chapter, index) => <button type="button" aria-label={`Show ${chapter.eyebrow}`} aria-current={index === activeIndex ? "step" : undefined} className={index === activeIndex ? "active" : ""} key={chapter.id} onClick={() => {
+          const section = root.current;
+          if (!section) return;
+          const top = section.getBoundingClientRect().top + window.scrollY;
+          window.scrollTo({ top: top + (section.offsetHeight - window.innerHeight) * (index === 0 ? 0 : (index + .25) / chapters.length), behavior: reducedMotion ? "instant" : "smooth" });
+        }}><span>{chapter.number}</span>{["Discover", "Products", "ROLE:X", "Connect"][index]}</button>)}</nav>
       </div>
     </section>
   );

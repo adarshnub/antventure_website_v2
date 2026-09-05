@@ -5,6 +5,7 @@ import { SiteHeader } from "@/components/site-header";
 import { SiteFooter } from "@/components/site-footer";
 import { AmbientFieldLoader } from "@/components/ambient-field-loader";
 import "./globals.css";
+import "./galaxy.css";
 
 const display = Newsreader({ subsets: ["latin"], variable: "--font-display", display: "swap" });
 const sans = Manrope({ subsets: ["latin"], variable: "--font-sans", display: "swap" });

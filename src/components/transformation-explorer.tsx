@@ -17,7 +17,7 @@ const painOptions: Record<BusinessFunction, string[]> = {
   service: ["Support triage", "Disconnected channels", "Citizen-service routing"],
 };
 
-export function TransformationExplorer() {
+export function TransformationExplorer({ immersive = false }: { immersive?: boolean }) {
   const [audience, setAudience] = useState<Audience | null>("business");
   const [fn, setFunction] = useState<BusinessFunction | null>("sales");
   const [pain, setPain] = useState<string | null>("Slow enquiry response");
@@ -30,7 +30,7 @@ export function TransformationExplorer() {
   };
 
   return (
-    <section className="explorer section-pad" id="explore" aria-labelledby="explorer-title">
+    <section className="explorer section-pad" id="explore" data-galaxy-stop={immersive || undefined} aria-labelledby="explorer-title">
       <div className="shell">
         <div className="section-heading explorer-heading">
           <div><p className="eyebrow">Interactive demonstration · 01</p><h2 id="explorer-title">What could your<br /><em>workflow become?</em></h2></div>
@@ -63,7 +63,7 @@ export function TransformationExplorer() {
 
           <div className="explorer-output" aria-live="polite">
             <div className="explorer-visual" aria-hidden="true">
-              <WorkflowScene />
+              {immersive ? <div className="galaxy-workflow"><div className="galaxy-workflow-inputs"><span>Email</span><span>Documents</span><span>WhatsApp</span></div><i /><div className="galaxy-workflow-core">ROLE:X<small>Read · reason · act</small></div><i /><div className="galaxy-workflow-decision">You approve<small>Human decision</small></div></div> : <WorkflowScene />}
               <div className="visual-labels"><span>Inputs</span><strong>ROLE:X</strong><span>Actions</span></div>
             </div>
             {!complete || !scenario ? (
