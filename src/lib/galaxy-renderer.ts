@@ -24,7 +24,23 @@ const vertexShader = `
     p = mix(p, aHelix, smoothstep(1.0, 2.0, uShape));
     p = mix(p, aConstellation, smoothstep(2.0, 3.0, uShape));
     p += aScatter * uExplosion;
-    p = mix(p, aOrb, uDemoBlend);
+    // Staggered spiral paths read as individual arrivals, not a shrinking object.
+    // Reversing scroll reverses these same paths back into the galaxy.
+    float arrival = smoothstep(aSeed * 0.3, 0.68 + aSeed * 0.32, uDemoBlend);
+    float winding = (1.0 - arrival) * 5.0;
+    vec3 spiral = p;
+    spiral.xz = mat2(cos(winding), -sin(winding), sin(winding), cos(winding)) * spiral.xz;
+    spiral.y += sin(arrival * 3.14159) * (1.0 + aSeed * 1.5);
+    // A small stream continues crossing the shell into its center while powered.
+    float feeder = step(0.94, aSeed);
+    float phase = fract(uTime * 0.19 + aSeed * 19.0);
+    float feedRadius = (1.0 - phase) * 4.5;
+    float feedAngle = (1.0 - phase) * 4.0;
+    vec3 feed = aOrb * feedRadius;
+    feed.xz = mat2(cos(feedAngle), -sin(feedAngle), sin(feedAngle), cos(feedAngle)) * feed.xz;
+    vec3 destination = mix(aOrb, feed, feeder * smoothstep(0.65, 1.0, uDemoBlend));
+    p = mix(p, spiral, sin(arrival * 3.14159));
+    p = mix(p, destination, arrival);
     p.y += sin(uTime * 0.65 + aSeed * 6.28 + length(p.xz)) * 0.09;
     float orbit = uTime * 0.055 / (0.7 + length(position.xz) * 0.24);
     p.xz = mat2(cos(orbit), -sin(orbit), sin(orbit), cos(orbit)) * p.xz;
@@ -41,7 +57,8 @@ const vertexShader = `
     gl_PointSize *= mix(1.0, 0.48, uDemoBlend);
     vColor = mix(color, vec3(0.3, 0.95, 0.72), uDemoBlend * 0.8);
     vLight = (0.76 + 0.24 * sin(aSeed * 120.0 + uTime * (0.6 + aSeed))) * (1.0 + influence * 0.7);
-    vLight *= mix(1.0, 0.18 + step(0.8, aSeed) * 0.35, uDemoBlend);
+    vLight *= mix(1.0, 0.45 + step(0.8, aSeed) * 0.65, uDemoBlend);
+    vLight *= mix(1.0, sin(phase * 3.14159) * 1.6, feeder * uDemoBlend);
   }
 `;
 const fragmentShader = `

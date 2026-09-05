@@ -56,9 +56,13 @@ The floating galaxy controls and observatory have been removed. The scene remain
 decorative and does not obstruct content or navigation.
 
 The ROLE:X plug-and-play demonstration at `/#explore` uses vector connections,
-an animated wireframe core, four selectable example inputs, and a simulated human
-approval step before outgoing signals activate. Rules, documents, and templates
-anchor the diagram. It replaces the previous multi-step transformation selector
+four selectable inputs, and continuous incoming/outgoing signals. The shared
+galaxy particles spiral into the central ROLE:X orb in staggered streams as it
+enters view, then reverse out into the page on exit. A small continuous intake
+crosses the orb shell; its local glow grows with the incoming energy. The section
+has no separate background overlay. A wireframe remains as the static fallback.
+Rules, documents, and templates anchor the diagram. There is no simulation panel
+or approval button. It replaces the previous multi-step transformation selector
 without adding a WebGL context. Example selection is passed into the contact URL;
 no real messages are sent and no customer systems are connected. Diagram motion
 pauses offscreen and is disabled for reduced-motion users.
@@ -73,7 +77,7 @@ system motion preferences, scroll explosion/reformation, removed floating contro
 surface interaction, persistent canvas across routes, and
 reduced-motion/no-WebGL behavior. It also saves screenshots in
 the ignored `test-results` directory for visual review. `site.spec.ts` checks
-all four demo inputs, human approval, and demo-to-contact context.
+all four inputs, orb formation/release, outgoing signals, and demo-to-contact context.
 
 ## Legacy cinematic media
 

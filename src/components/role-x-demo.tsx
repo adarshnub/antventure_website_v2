@@ -5,10 +5,10 @@ import { track } from "@vercel/analytics";
 import { TrackedLink } from "@/components/tracked-link";
 
 const inputs = [
-  { name: "Email", icon: "✉", color: "#3cddff", sample: "A customer asks for a revised quote.", action: "Read the enquiry, retrieve the price list, check the rules, prepare a reply and validate the draft." },
-  { name: "WhatsApp", icon: "◉", color: "#50e4b0", sample: "A customer follows up on an open request.", action: "Read the message, find the conversation, check the status, prepare a response and validate the next step." },
-  { name: "ERP", icon: "▤", color: "#b699ff", sample: "An invoice needs to be checked against its purchase order.", action: "Read the invoice, retrieve the order, compare the line items, flag exceptions and prepare the update." },
-  { name: "Forms", icon: "▧", color: "#ffbe62", sample: "A new service request arrives through a form.", action: "Read the submission, validate the details, identify the right team, prepare a task and check the routing rules." },
+  { name: "Email", icon: "✉", color: "#3cddff" },
+  { name: "WhatsApp", icon: "◉", color: "#50e4b0" },
+  { name: "ERP", icon: "▤", color: "#b699ff" },
+  { name: "Forms", icon: "▧", color: "#ffbe62" },
 ] as const;
 const outputs = [
   { name: "Draft reply", icon: "↗", color: "#ffbe62" },
@@ -32,7 +32,7 @@ function IntelligenceCore() {
   }));
   return <svg viewBox="0 0 200 200" aria-hidden="true" className="role-intelligence-core">
     <defs><radialGradient id="role-core-glow"><stop stopColor="#e6dc82" stopOpacity=".55" /><stop offset=".42" stopColor="#4febbb" stopOpacity=".18" /><stop offset="1" stopColor="#4febbb" stopOpacity="0" /></radialGradient></defs>
-    <circle cx="100" cy="100" r="98" fill="url(#role-core-glow)" />
+    <circle className="role-core-energy" cx="100" cy="100" r="98" fill="url(#role-core-glow)" />
     <g className="role-core-mesh" fill="none" stroke="#6bf2be" strokeWidth=".7">
       {rings.map((ring, row) => <g key={row} opacity={.45 + row * .1}>
         <polygon points={ring.map((p) => p.join(",")).join(" ")} />
@@ -47,7 +47,6 @@ function IntelligenceCore() {
 export function RoleXDemo() {
   const root = useRef<HTMLElement>(null);
   const [selected, setSelected] = useState(0);
-  const [approved, setApproved] = useState(false);
   useEffect(() => {
     const element = root.current;
     if (!element) return;
@@ -63,7 +62,7 @@ export function RoleXDemo() {
         <p className="role-demo-kicker">Silent integration with what you already run</p>
         <p className="role-demo-intro">It slots quietly into the tools your organisation already runs—email, WhatsApp, ERP, forms. No rebuild, no migration: plug-and-play. It reads from them and writes back to them.</p>
       </header>
-      <div className="role-demo-map" data-selected={selected} data-approved={approved}>
+      <div className="role-demo-map" id="role-demo-map" data-selected={selected}>
         <svg className="role-connections" viewBox="0 0 1000 500" preserveAspectRatio="none" aria-hidden="true">
           {inputs.map((input, i) => <g key={input.name} style={tint(input.color)} className={selected === i ? "connection selected" : "connection"}>
             <path d={`M150 ${65 + i * 94} Q340 ${90 + i * 65} 500 205`} />
@@ -77,7 +76,7 @@ export function RoleXDemo() {
         </svg>
         <div className="role-inputs" role="group" aria-label="Select an example input">
           <p className="role-column-label">Reads from</p>
-          {inputs.map((input, i) => <button type="button" key={input.name} className="role-node" style={tint(input.color)} aria-pressed={selected === i} aria-controls="role-demo-example" onClick={() => { setSelected(i); setApproved(false); track("explorer_started", { input: input.name }); }}><span className="role-node-icon" aria-hidden="true">{input.icon}</span>{input.name}</button>)}
+          {inputs.map((input, i) => <button type="button" key={input.name} className="role-node" style={tint(input.color)} aria-pressed={selected === i} aria-controls="role-demo-map" onClick={() => { setSelected(i); track("explorer_started", { input: input.name }); }}><span className="role-node-icon" aria-hidden="true">{input.icon}</span>{input.name}</button>)}
         </div>
         <div className="role-core"><IntelligenceCore /><strong>ROLE:X</strong><span>Your instructions.</span><small>Connected intelligence.</small></div>
         <div className="role-outputs" aria-label="Possible outputs">
@@ -85,10 +84,6 @@ export function RoleXDemo() {
           {outputs.map((output) => <div key={output.name} className="role-node" style={tint(output.color)}><span className="role-node-icon" aria-hidden="true">{output.icon}</span>{output.name}</div>)}
         </div>
         <div className="role-rules"><p>Follows your rules</p><div>{rules.map((rule) => <div className="role-node" key={rule.name} style={tint(rule.color)}><span className="role-node-icon" aria-hidden="true">{rule.icon}</span>{rule.name}</div>)}</div></div>
-      </div>
-      <div className="role-demo-example" id="role-demo-example">
-        <div aria-live="polite"><p className="eyebrow">Illustrative demo / {inputs[selected].name}</p><h3>{inputs[selected].sample}</h3><p>{inputs[selected].action}</p></div>
-        <div className="role-demo-approval"><p className="role-approval-label">5 AI steps. 1 human decision.</p><p role="status">{approved ? "Approved in this demo. The configured actions can now proceed." : "You review the proposed action before anything is sent or updated."}</p><button type="button" disabled={approved} onClick={() => { setApproved(true); track("explorer_completed", { input: inputs[selected].name }); }}>{approved ? "Demo approved ✓" : "Approve example →"}</button><small>Simulation only. No systems are connected.</small></div>
       </div>
       <div className="role-demo-actions"><TrackedLink className="button dark" href={`/contact-sales?reason=rolex&scenario=${encodeURIComponent(`ROLE:X plug-and-play / ${inputs[selected].name}`)}`} eventName="request_demo_clicked" eventData={{ placement: "role_demo" }}>Run this on your workflow <span aria-hidden="true">↗</span></TrackedLink><TrackedLink className="text-link light" href="https://role-x.surge.sh/" target="_blank" rel="noreferrer" eventName="role_x_outbound" eventData={{ placement: "role_demo" }}>Experience ROLE:X <span aria-hidden="true">↗</span></TrackedLink></div>
     </div>

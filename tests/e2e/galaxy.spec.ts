@@ -19,6 +19,14 @@ test("single galaxy has no floating controls and follows real sections", async (
   await expect.poll(async () => Number(await canvas.getAttribute("data-shape"))).toBeGreaterThan(.8);
   await page.locator("#explore").scrollIntoViewIfNeeded();
   await expect(page.locator("canvas")).toHaveCount(1);
+  await page.locator(".role-core").evaluate((core) => core.scrollIntoView({ block: "center", behavior: "instant" }));
+  await expect.poll(async () => Number(await canvas.getAttribute("data-orb-formation"))).toBeGreaterThan(.95);
+  await page.locator(".rolex-section").evaluate((section) => section.scrollIntoView({ block: "start", behavior: "instant" }));
+  await expect.poll(async () => Number(await canvas.getAttribute("data-orb-formation"))).toBeLessThan(.05);
+  await page.locator(".role-core").evaluate((core) => core.scrollIntoView({ block: "center", behavior: "instant" }));
+  await expect.poll(async () => Number(await canvas.getAttribute("data-orb-formation"))).toBeGreaterThan(.95);
+  await page.locator(".home-hero").evaluate((hero) => hero.scrollIntoView({ behavior: "instant" }));
+  await expect.poll(async () => Number(await canvas.getAttribute("data-orb-formation"))).toBeLessThan(.05);
   expect(errors).toEqual([]);
 });
 
