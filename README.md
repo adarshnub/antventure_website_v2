@@ -49,8 +49,22 @@ case studies are measured automatically. Styling is scoped to `.galaxy-site` in
   resources and event handlers are released when the shared backdrop unmounts.
   Route changes rebind the scene to the new page without restarting its animation.
 
+The **Explore the galaxy** control opens an optional observatory on every page.
+Visitors can switch between four formations, disperse the stars with a slider,
+and pause the scene. It reuses the existing three draw calls; no new canvas,
+models, textures, dependencies, or video downloads are added. The native dialog
+keeps keyboard focus inside, supports Escape, and restores focus and the page's
+scroll position when closed. With reduced motion, controls render a single new
+still frame rather than starting an animation.
+
+Selected glass cards have a restrained cursor reflection and depth response.
+These use delegated pointer events and CSS transitions, not another animation
+loop, and are disabled for touch, reduced motion, or the visitor's pause setting.
+Page entrances fade gently while the shared galaxy stays mounted.
+
 `tests/e2e/galaxy.spec.ts` verifies rendering, shared canvas, chapter controls,
-pause/resume, scroll explosion/reformation, persistent canvas across routes, and
+pause/resume, scroll explosion/reformation, observatory keyboard/shape controls,
+surface interaction, persistent canvas across routes, and
 reduced-motion/no-WebGL behavior. It also saves screenshots in
 the ignored `test-results` directory for visual review.
 

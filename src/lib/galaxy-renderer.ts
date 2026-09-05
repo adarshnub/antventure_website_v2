@@ -216,6 +216,12 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
   let disposed = false;
   let pointerActive = false;
   let slowFrames = 0;
+  let focused = false;
+  let focusBlend = 0;
+  let formation = 0;
+  let easedFormation = 0;
+  let dispersion = 0;
+  let easedDispersion = 0;
   let ratio = Math.min(devicePixelRatio || 1, lowPower ? 1.5 : 2);
   const pointer = new THREE.Vector2(0, 0);
   const easedPointer = new THREE.Vector2(0, 0);
@@ -272,6 +278,9 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
     lastRender = time;
     elapsed += dt;
     const easing = still ? 1 : 1 - Math.exp(-dt * 5);
+    focusBlend += ((focused ? 1 : 0) - focusBlend) * easing;
+    easedFormation += (formation - easedFormation) * easing;
+    easedDispersion += (dispersion - easedDispersion) * easing;
     journey += (targetJourney - journey) * easing;
     easedPointer.lerp(pointer, easing);
     trailingPointer.lerp(easedPointer, still ? 1 : 1 - Math.exp(-dt * 2.2));
@@ -285,6 +294,15 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
     group.scale.setScalar(lerp(from.scale, to.scale, mix) * (compact.matches ? 0.63 : 1));
     uniforms.uExplosion.value = lerp(from.explosion, to.explosion, mix) + Math.sin(mix * Math.PI) * (from.shape !== to.shape ? 1.25 : 0.3);
     uniforms.uShape.value = lerp(from.shape, to.shape, mix);
+    // The observatory reuses this scene, easing away from and back into the story.
+    group.position.multiplyScalar(1 - focusBlend);
+    group.position.y += focusBlend * (compact.matches ? 1.6 : 0.6);
+    group.rotation.x = lerp(group.rotation.x, .82 + easedPointer.y * .28, focusBlend);
+    group.rotation.z = lerp(group.rotation.z, -.3, focusBlend);
+    group.rotation.y += easedPointer.x * .28 * focusBlend;
+    group.scale.setScalar(lerp(group.scale.x, compact.matches ? .58 : .95, focusBlend));
+    uniforms.uShape.value = lerp(uniforms.uShape.value, easedFormation, focusBlend);
+    uniforms.uExplosion.value = lerp(uniforms.uExplosion.value, easedDispersion, focusBlend);
     uniforms.uTime.value = elapsed;
     uniforms.uPointer.value.copy(easedPointer);
     uniforms.uPointerStrength.value = lerp(uniforms.uPointerStrength.value, pointerActive ? 1 : 0, easing);
@@ -298,11 +316,12 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
     canvas.dataset.particles = String(count + fieldCount + tailCount);
     canvas.dataset.shape = uniforms.uShape.value.toFixed(2);
     canvas.dataset.explosion = uniforms.uExplosion.value.toFixed(2);
+    canvas.dataset.focus = focusBlend.toFixed(2);
   }
   function updateLoop() {
     renderer.setAnimationLoop(null);
     previousTime = 0;
-    if (!paused && !document.hidden && inView && !lost && !disposed) renderer.setAnimationLoop((time) => render(time));
+    if (!paused && !document.hidden && (inView || focused) && !lost && !disposed) renderer.setAnimationLoop((time) => render(time));
     canvas.dataset.motion = paused ? "paused" : "running";
   }
   function move(event: PointerEvent) {
@@ -331,6 +350,17 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
   updateLoop();
   return {
     setPaused(value: boolean) { paused = value; updateLoop(); },
+    setFocus(value: boolean) {
+      focused = value;
+      leave();
+      if (paused) render(0, true);
+      updateLoop();
+    },
+    setFormation(shape: number, spread: number) {
+      formation = THREE.MathUtils.clamp(shape, 0, 3);
+      dispersion = THREE.MathUtils.clamp(spread, 0, 1.5);
+      if (paused) render(0, true);
+    },
     setPage(page: HTMLElement) {
       observer.unobserve(main);
       resizeObserver.unobserve(main);

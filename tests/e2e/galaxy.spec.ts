@@ -1,5 +1,61 @@
 import { expect, test } from "@playwright/test";
 
+test("observatory reshapes the shared scene and returns focus to the website", async ({ page }, testInfo) => {
+  await page.goto("/about");
+  const canvas = page.locator(".galaxy-canvas");
+  await expect(canvas).toHaveAttribute("data-ready", "true");
+  const launcher = page.getByRole("button", { name: "Explore the galaxy" });
+  await launcher.click();
+  const dialog = page.getByRole("dialog", { name: /One universe/ });
+  await expect(dialog).toBeVisible();
+  await expect(dialog.getByRole("button", { name: "Back to website" })).toBeFocused();
+  await expect.poll(async () => Number(await canvas.getAttribute("data-focus"))).toBeGreaterThan(.98);
+  await dialog.getByRole("button", { name: "Helix", exact: false }).click();
+  await expect.poll(async () => Number(await canvas.getAttribute("data-shape"))).toBeGreaterThan(1.95);
+  await expect(page.locator("canvas")).toHaveCount(1);
+  await expect(canvas).toHaveAttribute("data-draw-calls", "3");
+  await page.screenshot({ path: testInfo.outputPath("observatory-helix.png") });
+  await dialog.getByRole("button", { name: "Pause motion" }).click();
+  await expect(canvas).toHaveAttribute("data-motion", "paused");
+  await dialog.getByRole("button", { name: "Collective", exact: false }).click();
+  await expect(canvas).toHaveAttribute("data-shape", "3.00");
+  const dispersion = dialog.getByRole("slider", { name: "Disperse the stars" });
+  await dispersion.focus();
+  await page.keyboard.press("End");
+  await expect(canvas).toHaveAttribute("data-explosion", "1.50");
+  await page.keyboard.press("Escape");
+  await expect(dialog).not.toBeVisible();
+  await expect(launcher).toBeFocused();
+  await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+});
+
+test("observatory works with reduced motion and restores the page scroll position", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/work");
+  await expect(page.locator(".galaxy-canvas")).toHaveAttribute("data-motion", "paused");
+  await page.locator(".case-study").first().scrollIntoViewIfNeeded();
+  const position = await page.evaluate(() => scrollY);
+  await page.getByRole("button", { name: "Explore the galaxy" }).click();
+  const dialog = page.getByRole("dialog");
+  await dialog.getByRole("button", { name: "Orbit", exact: false }).click();
+  await expect(page.locator(".galaxy-canvas")).toHaveAttribute("data-shape", "1.00");
+  await expect(page.locator(".galaxy-canvas")).toHaveAttribute("data-motion", "paused");
+  await dialog.getByRole("button", { name: "Back to website" }).click();
+  expect(await page.evaluate(() => scrollY)).toBeCloseTo(position, 0);
+});
+
+test("surface reflections follow the cursor and respect the motion switch", async ({ page }, testInfo) => {
+  test.skip(testInfo.project.name !== "chromium", "Hover enhancement is intentionally disabled for touch.");
+  await page.goto("/about");
+  const card = page.locator(".page-hero-intro");
+  await card.hover({ position: { x: 30, y: 30 } });
+  await expect(card).toHaveAttribute("data-surface-active", "true");
+  await page.getByRole("button", { name: "Pause motion" }).click();
+  await card.hover();
+  await expect(card).not.toHaveAttribute("data-surface-active", "true");
+});
+
 test("one galaxy persists across sections, pauses and leaves navigation usable", async ({ page }, testInfo) => {
   if (testInfo.project.name === "chromium") await page.setViewportSize({ width: 1440, height: 900 });
   const errors: string[] = [];
