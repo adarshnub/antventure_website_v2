@@ -30,7 +30,7 @@ export function SiteHeader() {
         </button>
         <nav id="primary-navigation" className={open ? "nav-links is-open" : "nav-links"} aria-label="Primary navigation">
           {navItems.map((item) => (
-            <Link key={item.href} href={item.href} aria-current={pathname === item.href ? "page" : undefined} onClick={() => setOpen(false)}>{item.label}</Link>
+            <Link key={item.href} href={item.href} aria-current={(pathname === item.href || pathname.startsWith(`${item.href}/`)) ? "page" : undefined} onClick={() => setOpen(false)}>{item.label}</Link>
           ))}
           <a href="https://role-x.surge.sh/" target="_blank" rel="noreferrer" onClick={() => { setOpen(false); track("role_x_outbound", { placement: "navigation" }); }}>ROLE:X <span aria-hidden="true">↗</span></a>
           <Link className="nav-cta" href="/contact-sales" onClick={() => { setOpen(false); track("request_demo_clicked", { placement: "navigation" }); }}>Contact sales</Link>

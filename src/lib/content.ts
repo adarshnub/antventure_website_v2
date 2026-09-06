@@ -1,8 +1,10 @@
 import type { Audience, BusinessFunction, CaseStudy, WorkflowScenario } from "./types";
 
 export const navItems = [
+  { href: "/products", label: "Products" },
   { href: "/how-we-work", label: "How we work" },
-  { href: "/work", label: "Work" },
+  { href: "/work", label: "Projects" },
+  { href: "/academy", label: "Academy" },
   { href: "/about", label: "About" },
 ];
 
@@ -18,16 +20,16 @@ export const clientLogos = [
 ];
 
 export const audiences: { id: Audience; label: string; headline: string; copy: string }[] = [
-  { id: "business", label: "Businesses", headline: "Grow without growing the admin.", copy: "Automate repetitive work across sales, operations and support while your people stay focused on customers." },
-  { id: "enterprise", label: "Enterprises", headline: "Coordinate intelligence at scale.", copy: "Connect AI to existing systems, teams and governance without forcing a company-wide rebuild." },
-  { id: "government", label: "Governments", headline: "Useful AI. Sovereign by design.", copy: "Deploy multilingual, privacy-conscious services with clear human control and in-country infrastructure options." },
+  { id: "business", label: "Businesses", headline: "Sales, support and operations.", copy: "Automate repetitive work across sales, operations and support while your people stay focused on customers." },
+  { id: "enterprise", label: "Enterprises", headline: "Integrations and governance.", copy: "Connect AI to existing systems, teams and governance without forcing a company-wide rebuild." },
+  { id: "government", label: "Governments", headline: "Private and local deployment.", copy: "Deploy multilingual, privacy-conscious services with clear human control and in-country infrastructure options." },
 ];
 
 export const capabilities = [
   { index: "01", title: "Workflow transformation", copy: "Give AI one repeatable step or an entire operating flow. ROLE:X reads the work, completes it and updates the systems your team already uses." },
   { index: "02", title: "Organizational intelligence", copy: "Turn public and private company knowledge into a governed brain that can answer, retrieve, reformat and act." },
   { index: "03", title: "Revenue intelligence", copy: "Join signals from conversations, channels and customer behaviour into one memory that helps teams act at the right time." },
-  { index: "04", title: "Sovereign & surgical AI", copy: "Solve a specific operational problem with a small, verifiable system—deployed in your cloud or on your premises." },
+  { index: "04", title: "Private AI deployment", copy: "Solve a specific operational problem with a small, verifiable system—deployed in your cloud or on your premises." },
 ];
 
 export const deliverySteps = [
@@ -128,7 +130,7 @@ export const caseStudies: CaseStudy[] = [
     slug: "boq-pricing",
     status: "Proof of concept",
     client: "ROLE:X",
-    title: "A priced BOQ, prepared for verification.",
+    title: "BOQ pricing automation",
     challenge: "Large MEP bills of quantities require slow catalogue matching and pricing across inconsistent item codes.",
     workflow: "PDF or spreadsheet to matched catalogue lines, proposed pricing and a completed output.",
     aiActions: ["Read every line", "Match items to catalogue and past work", "Price from historical invoices", "Flag uncertain rows"],
@@ -140,19 +142,19 @@ export const caseStudies: CaseStudy[] = [
     slug: "care-cure",
     status: "Live",
     client: "Care & Cure",
-    title: "Document validation before small errors become large ones.",
+    title: "Document and bill validation",
     challenge: "Healthcare billing teams need a dependable way to catch incomplete or inconsistent records.",
     workflow: "Uploaded documents to rule-based validation, a clear issue list and a verifiable review trail.",
     aiActions: ["Read the document set", "Apply approved checks", "Explain each flag", "Capture corrections"],
     humanRole: "Review clinical or policy-sensitive exceptions.",
-    outcome: "A surgical workflow that helps staff verify documents consistently.",
+    outcome: "Staff review flagged issues against a consistent set of document checks.",
     approvedAssets: [],
   },
   {
     slug: "lead-intelligence",
     status: "Pilot",
     client: "Lead Intelligence",
-    title: "One memory across every customer signal.",
+    title: "Cross-channel lead intelligence",
     challenge: "Web, WhatsApp, LinkedIn and voice conversations create fragmented lead context.",
     workflow: "Cross-channel signals to a consolidated timeline, fit indicators and clear next actions.",
     aiActions: ["Unify conversations", "Retrieve relationship context", "Organize intent signals", "Prepare the next action"],
@@ -164,7 +166,7 @@ export const caseStudies: CaseStudy[] = [
     slug: "organization-brain",
     status: "Live",
     client: "Organization Brain",
-    title: "Company knowledge made useful at the point of work.",
+    title: "Internal company knowledge access",
     challenge: "Policies, product knowledge and training material are scattered across files and teams.",
     workflow: "Approved public and private sources to searchable, answerable organizational knowledge.",
     aiActions: ["Organize approved sources", "Retrieve relevant passages", "Answer in context", "Record feedback"],

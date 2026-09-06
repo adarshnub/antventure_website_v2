@@ -58,9 +58,9 @@ export function RoleXDemo() {
     <div className="shell">
       <header className="role-demo-heading">
         <p className="eyebrow">ROLE:X / Flagship product</p>
-        <h2 id="role-demo-title">Plug-and-play.</h2>
-        <p className="role-demo-kicker">Silent integration with what you already run</p>
-        <p className="role-demo-intro">It slots quietly into the tools your organisation already runs—email, WhatsApp, ERP, forms. No rebuild, no migration: plug-and-play. It reads from them and writes back to them.</p>
+        <h2 id="role-demo-title">ROLE:X</h2>
+        <p className="role-demo-kicker">Plug-and-play workflow automation</p>
+        <p className="role-demo-intro">Automate work inside email, WhatsApp, ERP and forms. ROLE:X applies your instructions to prepare replies, update systems and create tasks, with human approval where required.</p>
       </header>
       <div className="role-demo-map" id="role-demo-map" data-selected={selected}>
         <svg className="role-connections" viewBox="0 0 1000 500" preserveAspectRatio="none" aria-hidden="true">

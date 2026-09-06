@@ -12,6 +12,8 @@ type ContactFields = {
 };
 
 const reasonLabels: Record<string, string> = {
+  product: "Product demonstration",
+  training: "Ant AI Academy / corporate training",
   rolex: "ROLE:X demonstration",
   workflow: "Automate a workflow",
   business: "AI for my business",
@@ -25,7 +27,7 @@ export function ContactForm() {
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
   const initialReason = useMemo(() => reasonLabels[params.get("reason") ?? ""] ?? "General enquiry", [params]);
   const scenario = params.get("scenario") ?? "";
-  const { register, handleSubmit, formState: { errors }, reset } = useForm<ContactFields>({ defaultValues: { reason: initialReason, details: scenario ? `I would like to explore this workflow: ${scenario}` : "", consent: false, website: "" } });
+  const { register, handleSubmit, formState: { errors }, reset } = useForm<ContactFields>({ defaultValues: { reason: initialReason, details: scenario ? `I would like to discuss: ${scenario}` : "", consent: false, website: "" } });
 
   const onSubmit = async (values: ContactFields) => {
     setStatus("loading");

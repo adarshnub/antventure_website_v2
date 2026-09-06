@@ -1,0 +1,33 @@
+.product-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px}
+.product-card{--product-color:#9bf1d9;padding:30px;border:1px solid #c4e7ef28;border-radius:18px;background:linear-gradient(125deg,#10232baa,#06121aa6);overflow:hidden;transition:border-color .25s,transform .25s}
+.product-card:hover{border-color:var(--product-color);transform:translateY(-3px)}
+.product-card-flagship{grid-column:1/-1;border-color:#9bf1d957}
+.product-card-top{display:flex;justify-content:space-between;gap:16px;align-items:center;font:10px var(--mono);letter-spacing:.07em;text-transform:uppercase;color:#c4d4dc}
+.flagship-badge{padding:7px 11px;border:1px solid #9bf1d947;border-radius:99px;color:#9bf1d9;white-space:nowrap}
+.product-card h3{font-size:clamp(28px,3vw,44px);margin:28px 0 12px;letter-spacing:-.035em;color:#fff}
+.product-card p{max-width:46ch;color:#bacbd1;font-size:15px}.product-card .text-link{margin-top:18px}
+.product-card-flagship .product-card-content{display:grid;grid-template-columns:1fr 1.2fr;gap:40px;align-items:center}
+.product-visual{--product-color:#9bf1d9;margin-top:28px;padding:24px 0;color:var(--product-color);border-top:1px solid #ffffff15}
+.product-visual-label{display:flex;justify-content:space-between;font:9px var(--mono);letter-spacing:.15em;color:#a6bdc6}
+.product-flow{display:grid;grid-template-columns:1fr 1.1fr 1fr;align-items:center;gap:12px;margin-top:20px}
+.product-flow>div:not(.product-flow-core){display:grid;gap:12px}.product-flow>div>span{padding:10px 8px;border:1px solid #ffffff25;border-radius:6px;background:#05111c9c;font:10px var(--mono);color:#d9e5eb;position:relative}
+.product-flow>div:first-child>span:after{content:"";position:absolute;width:12px;height:1px;background:var(--product-color);right:-13px;top:50%}
+.product-flow>div:last-child>span:before{content:"";position:absolute;width:12px;height:1px;background:var(--product-color);left:-13px;top:50%}
+.product-flow-core{position:relative;display:grid;place-items:center;aspect-ratio:1}.product-flow-core svg{width:100%;height:100%;stroke:currentColor;stroke-width:.7;opacity:.7}.product-flow-core strong{position:absolute;font:10px var(--mono);padding:8px 5px;background:#061722e8;white-space:nowrap}.product-orbit{fill:currentColor;transform-origin:80px 80px;animation:product-orbit 12s linear infinite}
+@keyframes product-orbit{to{transform:rotate(360deg)}}
+.product-overview-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:70px;align-items:center}.product-overview h2{font-size:clamp(28px,3.2vw,46px);line-height:1.15}.product-overview .product-visual{margin:0}.product-detail .page-hero h1{font-size:clamp(48px,7vw,108px)}
+.portfolio-feature-grid,.academy-modules{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:44px}.portfolio-feature-grid article,.academy-modules article{border-top:1px solid #ffffff35;padding:28px 0}.portfolio-feature-grid h3,.academy-modules h3{font-size:23px;margin:18px 0 12px}.portfolio-feature-grid p,.academy-modules p,.academy-instructor p{color:#bdccd2;max-width:55ch}
+.setup-flow{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));list-style:none;padding:0;margin:42px 0 0;gap:20px}.setup-flow li{border-top:1px solid #9bf1d95c;padding:24px 0}.setup-flow span,.academy-index{font:12px var(--mono);color:#9bf1d9}.setup-flow h3{font-size:19px;line-height:1.35;margin:24px 0 12px}.setup-flow p{font-size:14px;color:#bdccd2}.portfolio-note{margin-top:30px;color:#bdccd2}.portfolio-note a{text-decoration:underline;color:#9bf1d9}
+.academy-instructor{display:grid;grid-template-columns:minmax(220px,.65fr) 1fr;gap:80px;align-items:center}.academy-instructor img{width:100%;max-height:450px;object-fit:cover;border-radius:16px}.academy-instructor h3{margin:30px 0 12px}
+.project-directory{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:24px;margin-top:42px}.project-directory article{padding:28px;border:1px solid #c4e7ef28;border-radius:14px;background:#081a2399}.project-directory h3{font-size:27px;margin:25px 0 14px}.project-directory p{color:#bdccd2}.project-directory a{display:inline-block;color:#9bf1d9;margin-top:20px}
+.portfolio-academy{display:grid;grid-template-columns:1fr 1fr;gap:64px;align-items:center}.portfolio-academy p{max-width:50ch;color:#bdccd2}.portfolio-academy .text-link{margin-top:22px}.portfolio-academy .academy-tags{display:flex;flex-wrap:wrap;gap:12px}.academy-tags span{padding:16px;border:1px solid #9bf1d941;border-radius:10px;font:12px var(--mono)}
+.galaxy-site .home-hero h1{font-size:clamp(40px,5.1vw,84px)}
+.galaxy-site .home-hero-copy{max-width:760px;font-size:15px;line-height:1.65;margin-block:26px}
+.flagship-introduction{scroll-margin-top:100px}
+@media(max-width:820px){.galaxy-site .home-hero h1{font-size:clamp(36px,9vw,64px)}.galaxy-site .home-hero-copy{font-size:13px;line-height:1.6}}
+.portfolio-footer-products{display:flex;flex-wrap:wrap;gap:18px;padding-block:28px;border-top:1px solid #ffffff20;font-size:13px}.portfolio-footer-products a{color:#c3d8de}
+@media(min-width:821px){.nav-links{gap:22px;font-size:12px}}
+@media(max-width:1100px){.product-card-flagship .product-card-content{grid-template-columns:1fr}.product-overview-grid{gap:30px}.setup-flow{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:820px){.product-grid,.product-overview-grid,.academy-instructor,.portfolio-academy{grid-template-columns:1fr}.product-card{padding:22px}.product-card-top{font-size:8px;flex-wrap:wrap}.portfolio-feature-grid,.academy-modules,.project-directory{grid-template-columns:repeat(2,minmax(0,1fr))}.academy-instructor{gap:30px}.academy-instructor img{max-width:360px}.setup-flow{grid-template-columns:repeat(2,minmax(0,1fr))}.product-overview h2{font-size:30px}}
+@media(max-width:480px){.portfolio-feature-grid,.academy-modules,.project-directory{grid-template-columns:1fr}.product-flow{gap:8px}.product-flow>div>span{font-size:8px;padding:9px 5px}.product-flow-core strong{font-size:8px}.product-flow>div:first-child>span:after,.product-flow>div:last-child>span:before{width:8px}.product-flow>div:first-child>span:after{right:-9px}.product-flow>div:last-child>span:before{left:-9px}}
+@media(prefers-reduced-motion:reduce){.product-orbit{animation:none}.product-card{transition:none}.product-card:hover{transform:none}}

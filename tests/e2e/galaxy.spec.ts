@@ -13,15 +13,15 @@ test("single galaxy has no floating controls and follows real sections", async (
   await expect(page.getByRole("button", { name: /Explore the galaxy|Pause motion|Resume motion/ })).toHaveCount(0);
   await expect(page.locator(".galaxy-observatory")).toHaveCount(0);
   await page.screenshot({ path: testInfo.outputPath("single-hero.jpg"), type: "jpeg", quality: 80, scale: "css" });
-  await page.locator(".system").evaluate((section) => window.scrollTo({ top: section.getBoundingClientRect().top + scrollY - innerHeight * .25, behavior: "instant" }));
+  await page.locator("#explore").evaluate((section) => window.scrollTo({ top: section.getBoundingClientRect().top + scrollY - innerHeight * .25, behavior: "instant" }));
   await expect.poll(async () => Number(await canvas.getAttribute("data-explosion"))).toBeGreaterThan(1);
-  await page.locator(".galaxy-passage").evaluate((section) => window.scrollTo({ top: section.getBoundingClientRect().top + scrollY - innerHeight * .25, behavior: "instant" }));
+  await page.locator("#products").evaluate((section) => window.scrollTo({ top: section.getBoundingClientRect().top + scrollY - innerHeight * .25, behavior: "instant" }));
   await expect.poll(async () => Number(await canvas.getAttribute("data-shape"))).toBeGreaterThan(.8);
   await page.locator("#explore").scrollIntoViewIfNeeded();
   await expect(page.locator("canvas")).toHaveCount(1);
   await page.locator(".role-core").evaluate((core) => core.scrollIntoView({ block: "center", behavior: "instant" }));
   await expect.poll(async () => Number(await canvas.getAttribute("data-orb-formation"))).toBeGreaterThan(.95);
-  await page.locator(".rolex-section").evaluate((section) => section.scrollIntoView({ block: "start", behavior: "instant" }));
+  await page.locator("#products").evaluate((section) => section.scrollIntoView({ block: "start", behavior: "instant" }));
   await expect.poll(async () => Number(await canvas.getAttribute("data-orb-formation"))).toBeLessThan(.05);
   await page.locator(".role-core").evaluate((core) => core.scrollIntoView({ block: "center", behavior: "instant" }));
   await expect.poll(async () => Number(await canvas.getAttribute("data-orb-formation"))).toBeGreaterThan(.95);
@@ -35,7 +35,7 @@ test("galaxy stays mounted across marketing and legal routes", async ({ page }) 
   const canvas = page.locator(".galaxy-canvas");
   await expect(canvas).toHaveAttribute("data-ready", "true");
   await canvas.evaluate((el) => el.setAttribute("data-persistent", "original"));
-  for (const route of ["/how-we-work", "/work", "/about", "/contact-sales", "/privacy", "/terms"]) {
+  for (const route of ["/products", "/academy", "/how-we-work", "/work", "/about", "/contact-sales", "/privacy", "/terms"]) {
     await page.locator('.site-footer a[href="' + route + '"]').first().click();
     await expect(page).toHaveURL(new RegExp(route + "$"));
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
@@ -82,7 +82,7 @@ test("no WebGL retains the diagram and contact links", async ({ page }) => {
   });
   await page.goto("/#explore");
   await expect(page.locator(".galaxy-fallback")).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Plug-and-play." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "ROLE:X", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "ERP", exact: true }).click();
   await page.getByRole("link", { name: "Run this on your workflow" }).click();
   await expect(page).toHaveURL(/reason=rolex/);

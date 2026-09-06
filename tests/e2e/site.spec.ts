@@ -5,7 +5,7 @@ test("primary pages render and navigate", async ({ page }) => {
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Collective Intelligence");
   await page.getByRole("link", { name: "How we work" }).first().click();
   await expect(page).toHaveURL(/how-we-work/);
-  await expect(page.getByRole("heading", { level: 1 })).toContainText("Structure before");
+  await expect(page.getByRole("heading", { level: 1 })).toContainText("AI implementation");
 });
 
 test("hero is a single opening section with direct actions", async ({ page }) => {
@@ -15,20 +15,22 @@ test("hero is a single opening section with direct actions", async ({ page }) =>
   await expect(page.locator(".hero-scroll, .hero-scene-index")).toHaveCount(0);
   expect(await hero.evaluate((element) => element.getBoundingClientRect().height / innerHeight)).toBeLessThan(1.4);
   await expect(hero.getByRole("link", { name: "Request a demo" })).toHaveAttribute("href", "/contact-sales");
-  await hero.getByRole("link", { name: "Discover collective intelligence" }).click();
-  await expect(page.getByRole("heading", { name: "AI transformation is a system." })).toBeInViewport();
+  await hero.getByRole("link", { name: "View our products" }).click();
+  await expect(page.getByRole("heading", { name: "ROLE:X", exact: true })).toBeInViewport();
   await expect(page.getByRole("heading", { level: 1 })).not.toBeInViewport();
   await page.goto("/");
-  await hero.getByRole("link", { name: "Explore what we can automate" }).click();
-  await expect(page).toHaveURL(/#explore$/);
-  await expect(page.locator("#explore")).toBeInViewport();
+  await hero.getByRole("link", { name: "Explore our products" }).click();
+  await expect(page).toHaveURL(/#system$/);
+  await expect(page.locator("#system")).toBeInViewport();
 });
 
 test("ROLE:X diagram flows continuously and carries context into contact", async ({ page }, testInfo) => {
   await page.goto("/#explore");
-  await expect(page.getByRole("heading", { name: "Plug-and-play." })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "ROLE:X", exact: true })).toBeVisible();
   await expect(page.locator(".role-demo")).toHaveCSS("background-image", "none");
   await expect(page.locator(".role-demo")).toHaveCSS("background-color", "rgba(0, 0, 0, 0)");
+  await expect(page.locator(".galaxy-canvas")).toHaveAttribute("data-ready", "true");
+  await page.evaluate(() => document.fonts.ready);
   await page.locator(".role-core").evaluate((core) => core.scrollIntoView({ block: "center", behavior: "instant" }));
   await expect(page.locator(".galaxy-canvas")).toHaveAttribute("data-orb-formation", "1.00");
   await expect(page.locator(".galaxy-canvas")).toHaveAttribute("data-ready", "true");
