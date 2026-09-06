@@ -8,7 +8,7 @@ test("single galaxy has no floating controls and follows real sections", async (
   await page.goto("/");
   const canvas = page.locator(".galaxy-canvas");
   await expect(canvas).toHaveAttribute("data-ready", "true");
-  await expect(canvas).toHaveAttribute("data-draw-calls", "3");
+  await expect(canvas).toHaveAttribute("data-draw-calls", "4");
   await expect(page.locator("canvas")).toHaveCount(1);
   await expect(page.getByRole("button", { name: /Explore the galaxy|Pause motion|Resume motion/ })).toHaveCount(0);
   await expect(page.locator(".galaxy-observatory")).toHaveCount(0);
@@ -50,6 +50,7 @@ test("reduced motion remains automatic without visible controls", async ({ page 
   await page.goto("/");
   const canvas = page.locator(".galaxy-canvas");
   await expect(canvas).toHaveAttribute("data-motion", "paused");
+  await expect(canvas).toHaveAttribute("data-assembly", "1.00");
   const shape = await canvas.getAttribute("data-shape");
   await page.locator("#explore").scrollIntoViewIfNeeded();
   await expect(canvas).toHaveAttribute("data-shape", shape!);
@@ -82,6 +83,7 @@ test("no WebGL retains the diagram and contact links", async ({ page }) => {
   });
   await page.goto("/#explore");
   await expect(page.locator(".galaxy-fallback")).toBeVisible();
+  await expect(page.locator(".hero-sculpture")).toBeVisible();
   await expect(page.getByRole("heading", { name: "ROLE:X", exact: true })).toBeVisible();
   await page.getByRole("button", { name: "ERP", exact: true }).click();
   await page.getByRole("link", { name: "Run this on your workflow" }).click();

@@ -17,7 +17,7 @@ Original product URLs redirect to the new detail pages. Navigation, footer and s
 
 ### Concept-note hero and flagship ordering
 
-The homepage hero is an explicit exception to the factual-copy rewrite: it uses section 3 of `Ant_Venture_Homepage_Concept_Note_v2.pdf` verbatim for the primary headline and supporting paragraph. The alternate headline is used for the homepage social preview title, not as an additional visible heading. The existing galaxy visual direction remains unchanged.
+The homepage hero uses section 3 of `Ant_Venture_Homepage_Concept_Note_v2.pdf` for the primary headline. At the user's request, the supporting paragraph is now conveyed through a full-size particle AI brain: three independent streams assemble into two folded hemispheres, with moving neural pulses and continued incoming contributions. The small inline diagram was removed. The original paragraph remains in the metadata/content module, not visibly in the hero. A concise accessible description and static reduced-motion/no-JavaScript view convey the same relationship. The alternate headline is used for the homepage social preview title. The hero replaces the galaxy and woven sculpture with a recognizable brain; scrolling blends the same particles into the existing site and ROLE:X scenes. The shared renderer uses four draw calls, with static SVG and reduced-motion fallbacks, and no new assets or dependencies.
 
 On the homepage and product directory, ROLE:X is introduced with its animated input/output diagram first. The other five products follow below. Duplicate standalone ROLE:X introduction cards and the later repeated homepage feature have been removed.
 

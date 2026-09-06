@@ -13,6 +13,9 @@ test("hero is a single opening section with direct actions", async ({ page }) =>
   const hero = page.locator(".home-hero");
   await expect(page.getByRole("heading", { level: 1 })).toContainText("Collective Intelligence");
   await expect(page.locator(".hero-scroll, .hero-scene-index")).toHaveCount(0);
+  await expect(hero.locator(".home-hero-copy")).toHaveCount(0);
+  await expect(hero.getByRole("img", { name: /Three independent streams/ })).toBeVisible();
+  await expect(hero.locator(".hero-collective")).toHaveCount(0);
   expect(await hero.evaluate((element) => element.getBoundingClientRect().height / innerHeight)).toBeLessThan(1.4);
   await expect(hero.getByRole("link", { name: "Request a demo" })).toHaveAttribute("href", "/contact-sales");
   await hero.getByRole("link", { name: "View our products" }).click();

@@ -8,6 +8,7 @@ import "./globals.css";
 import "./galaxy.css";
 import "./role-demo.css";
 import "./portfolio.css";
+import "./hero-collective.css";
 
 const display = Newsreader({ subsets: ["latin"], variable: "--font-display", display: "swap" });
 const sans = Manrope({ subsets: ["latin"], variable: "--font-sans", display: "swap" });

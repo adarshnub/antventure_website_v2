@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { brainPoint } from "./brain-shape";
 
 // All stars share a geometry and shader. Scroll/cursor change uniforms, not buffers.
 const vertexShader = `
@@ -7,6 +8,8 @@ const vertexShader = `
   uniform float uShape;
   uniform float uRatio;
   uniform float uDemoBlend;
+  uniform float uHeroBlend;
+  uniform float uAssembly;
   uniform float uPointerStrength;
   uniform vec2 uWake;
   uniform vec2 uPointer;
@@ -15,6 +18,8 @@ const vertexShader = `
   attribute vec3 aHelix;
   attribute vec3 aConstellation;
   attribute vec3 aOrb;
+  attribute vec3 aWeave;
+  attribute vec3 aBrain;
   attribute float aSize;
   attribute float aSeed;
   varying vec3 vColor;
@@ -24,6 +29,19 @@ const vertexShader = `
     p = mix(p, aHelix, smoothstep(1.0, 2.0, uShape));
     p = mix(p, aConstellation, smoothstep(2.0, 3.0, uShape));
     p += aScatter * uExplosion;
+    // Independent contributions assemble into a recognizable folded AI brain.
+    float family = mod(aWeave.x, 3.0);
+    float join = smoothstep(aSeed * 0.25, 0.7 + aSeed * 0.3, uAssembly);
+    float t = fract(aSeed * 71.0 + uTime * 0.14);
+    vec3 source = vec3((family - 1.0) * 4.0, -3.7 - aSeed * 2.0, sin(aSeed * 50.0) * 2.5);
+    vec3 contribution = mix(source, aBrain, join);
+    contribution.x += sin(join * 3.14159) * sin(aSeed * 30.0) * 1.2;
+    // A small stream keeps arriving while the cortex stays stable and readable.
+    float incoming = step(0.965, aSeed) * join;
+    vec3 signalPath = mix(source, aBrain, smoothstep(0.0, 1.0, t));
+    signalPath.z += sin(t * 3.14159) * 1.2;
+    contribution = mix(contribution, signalPath, incoming);
+    p = mix(p, contribution, uHeroBlend);
     // Staggered spiral paths read as individual arrivals, not a shrinking object.
     // Reversing scroll reverses these same paths back into the galaxy.
     float arrival = smoothstep(aSeed * 0.3, 0.68 + aSeed * 0.32, uDemoBlend);
@@ -42,7 +60,7 @@ const vertexShader = `
     p = mix(p, spiral, sin(arrival * 3.14159));
     p = mix(p, destination, arrival);
     p.y += sin(uTime * 0.65 + aSeed * 6.28 + length(p.xz)) * 0.09;
-    float orbit = uTime * 0.055 / (0.7 + length(position.xz) * 0.24);
+    float orbit = uTime * 0.055 / (0.7 + length(position.xz) * 0.24) * (1.0 - uHeroBlend);
     p.xz = mat2(cos(orbit), -sin(orbit), sin(orbit), cos(orbit)) * p.xz;
     vec4 view = modelViewMatrix * vec4(p, 1.0);
     vec4 clip = projectionMatrix * view;
@@ -55,10 +73,18 @@ const vertexShader = `
     gl_Position = projectionMatrix * view;
     gl_PointSize = clamp(aSize * uRatio * (14.0 / max(3.0, -view.z)) * (1.0 + influence * 0.5), 1.5, 18.0);
     gl_PointSize *= mix(1.0, 0.48, uDemoBlend);
+    gl_PointSize *= mix(1.0, 0.95, uHeroBlend);
     vColor = mix(color, vec3(0.3, 0.95, 0.72), uDemoBlend * 0.8);
+    vec3 threadColor = mix(vec3(0.28,0.86,0.8), vec3(0.65,0.72,1.0), step(0.5,family));
+    threadColor = mix(threadColor, vec3(1.0,0.73,0.4), step(1.5,family));
+    vec3 cortexColor = mix(vec3(0.35,0.68,1.0), vec3(0.4,1.0,0.8), step(0.0,aBrain.x));
+    vColor = mix(vColor, mix(threadColor, cortexColor, join), uHeroBlend);
     vLight = (0.76 + 0.24 * sin(aSeed * 120.0 + uTime * (0.6 + aSeed))) * (1.0 + influence * 0.7);
     vLight *= mix(1.0, 0.45 + step(0.8, aSeed) * 0.65, uDemoBlend);
     vLight *= mix(1.0, sin(phase * 3.14159) * 1.6, feeder * uDemoBlend);
+    float neuralPulse = pow(sin(aBrain.y * 3.0 + aBrain.x * 2.0 - uTime * 2.2) * 0.5 + 0.5, 12.0);
+    vLight *= mix(1.0, 0.8 + neuralPulse * 1.4, uHeroBlend);
+    vLight *= mix(1.0, sin(t * 3.14159), incoming * uHeroBlend);
   }
 `;
 const fragmentShader = `
@@ -69,7 +95,7 @@ const fragmentShader = `
     float core = 1.0 - smoothstep(0.08, 0.42, r);
     float halo = exp(-r * r * 5.0) * 0.22;
     float alpha = (core + halo) * (1.0 - smoothstep(0.72, 1.0, r));
-    gl_FragColor = vec4(vColor * vLight, alpha * 0.88);
+    gl_FragColor = vec4(vColor * vLight, alpha * 0.88 * step(0.001, vLight));
   }
 `;
 
@@ -111,6 +137,8 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
   const helix = new Float32Array(count * 3);
   const constellation = new Float32Array(count * 3);
   const orb = new Float32Array(count * 3);
+  const weave = new Float32Array(count * 3);
+  const brain = new Float32Array(count * 3);
   const colors = new Float32Array(count * 3);
   const sizes = new Float32Array(count);
   const seeds = new Float32Array(count);
@@ -119,6 +147,10 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
   const outside = new THREE.Color("#697edb");
   const starColor = new THREE.Color();
   for (let i = 0; i < count; i++) {
+    weave[i * 3] = i % 90;
+    weave[i * 3 + 1] = Math.floor(i / 90) / Math.ceil(count / 90);
+    weave[i * 3 + 2] = Math.sin(i * 15.37);
+    brain.set(brainPoint(i, count), i * 3);
     const r = Math.pow(random(), 1.6) * 5.4 + 0.025;
     const arm = i % 4;
     const spread = Math.pow(random(), 2.5) * (random() < 0.5 ? -1 : 1);
@@ -168,9 +200,12 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
   geometry.setAttribute("aHelix", new THREE.BufferAttribute(helix, 3));
   geometry.setAttribute("aConstellation", new THREE.BufferAttribute(constellation, 3));
   geometry.setAttribute("aOrb", new THREE.BufferAttribute(orb, 3));
+  geometry.setAttribute("aWeave", new THREE.BufferAttribute(weave, 3));
+  geometry.setAttribute("aBrain", new THREE.BufferAttribute(brain, 3));
   geometry.setAttribute("aSize", new THREE.BufferAttribute(sizes, 1));
   geometry.setAttribute("aSeed", new THREE.BufferAttribute(seeds, 1));
   const uniforms = {
+    uHeroBlend: { value: 0 }, uAssembly: { value: 1 },
     uTime: { value: 0 }, uExplosion: { value: 0 }, uShape: { value: 0 }, uRatio: { value: 1 }, uDemoBlend: { value: 0 },
     uPointer: { value: new THREE.Vector2(9, 9) }, uPointerStrength: { value: 0 }, uWake: { value: new THREE.Vector2() },
   };
@@ -178,6 +213,24 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
   const stars = new THREE.Points(geometry, material);
   stars.frustumCulled = false;
   group.add(stars);
+
+  // Sparse cortical contours reinforce the folds without another model asset.
+  // Shared attributes, one extra draw call, no per-frame geometry uploads.
+  const threadGeometry = new THREE.BufferGeometry();
+  for (const [name, attribute] of Object.entries(geometry.attributes)) threadGeometry.setAttribute(name, attribute);
+  const threadIndices: number[] = [];
+  for (let i = 0; i + 2 < count; i++) {
+    if (Math.floor(i / 360) % 5 === 0 && Math.floor(i / 2) % 180 < 179 && seeds[i] < .965 && seeds[i + 2] < .965) threadIndices.push(i, i + 2);
+  }
+  threadGeometry.setIndex(threadIndices);
+  const threadMaterial = new THREE.ShaderMaterial({
+    uniforms, vertexShader, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
+    fragmentShader: `uniform float uHeroBlend; varying vec3 vColor; varying float vLight;
+      void main(){ gl_FragColor=vec4(vColor * 1.15, min(vLight,1.0) * 0.3 * uHeroBlend); }`,
+  });
+  const threads = new THREE.LineSegments(threadGeometry, threadMaterial);
+  threads.frustumCulled = false;
+  group.add(threads);
 
   // A separate, low-density star field supplies parallax at a different depth.
   const fieldCount = lowPower ? 400 : 1200;
@@ -190,11 +243,11 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
   const fieldGeometry = new THREE.BufferGeometry();
   fieldGeometry.setAttribute("position", new THREE.BufferAttribute(fieldPositions, 3));
   const fieldMaterial = new THREE.ShaderMaterial({
-    uniforms: { uRatio: uniforms.uRatio }, transparent: true, depthWrite: false,
-    vertexShader: `uniform float uRatio; varying vec3 vColor; varying float vLight;
+    uniforms: { uRatio: uniforms.uRatio, uHeroBlend: uniforms.uHeroBlend }, transparent: true, depthWrite: false,
+    vertexShader: `uniform float uRatio; uniform float uHeroBlend; varying vec3 vColor; varying float vLight;
       void main() { vec4 view = modelViewMatrix * vec4(position, 1.0);
       gl_Position = projectionMatrix * view; gl_PointSize = clamp(45.0 / -view.z, 1.2, 3.0) * uRatio;
-      vColor = vec3(0.52, 0.69, 0.89); vLight = 0.68; }`,
+      vColor = vec3(0.52, 0.69, 0.89); vLight = 0.68 * (1.0-uHeroBlend); }`,
     fragmentShader,
   });
   const field = new THREE.Points(fieldGeometry, fieldMaterial);
@@ -211,9 +264,9 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
   const tailGeometry = new THREE.BufferGeometry();
   tailGeometry.setAttribute("position", new THREE.BufferAttribute(tailPositions, 3));
   const tailMaterial = new THREE.ShaderMaterial({
-    uniforms: { uTime: uniforms.uTime, uRatio: uniforms.uRatio, uExplosion: uniforms.uExplosion, uDemoBlend: uniforms.uDemoBlend },
+    uniforms: { uTime: uniforms.uTime, uRatio: uniforms.uRatio, uExplosion: uniforms.uExplosion, uDemoBlend: uniforms.uDemoBlend, uHeroBlend: uniforms.uHeroBlend },
     transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
-    vertexShader: `uniform float uTime; uniform float uRatio; uniform float uExplosion; uniform float uDemoBlend;
+    vertexShader: `uniform float uTime; uniform float uRatio; uniform float uExplosion; uniform float uDemoBlend; uniform float uHeroBlend;
       varying vec3 vColor; varying float vLight;
       void main() {
         float trail = position.x;
@@ -225,7 +278,7 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
         gl_Position = projectionMatrix * view;
         gl_PointSize = (1.5 + 4.0 * pow(1.0-trail, 3.0)) * uRatio * 14.0 / max(3.0, -view.z);
         vColor = mix(vec3(0.25, 0.76, 1.0), vec3(1.0, 0.85, 0.56), mod(orbit, 2.0));
-        vLight = pow(1.0-trail, 2.0) * 1.5 * (1.0 - uDemoBlend);
+        vLight = pow(1.0-trail, 2.0) * 1.5 * (1.0 - uDemoBlend) * (1.0-uHeroBlend);
       }`, fragmentShader,
   });
   const tails = new THREE.Points(tailGeometry, tailMaterial);
@@ -233,6 +286,7 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
   group.add(tails);
 
   let stops: number[] = [];
+  let hasHero = false;
   let targetJourney = 0;
   let journey = 0;
   let elapsed = 0;
@@ -264,6 +318,7 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
       orbSize = rect.width;
     }
     const hero = main.querySelector<HTMLElement>(".home-hero");
+    hasHero = Boolean(hero);
     const start = main.getBoundingClientRect().top + scrollY;
     if (hero) {
       // Real document sections drive the journey, not virtual hero chapters.
@@ -326,9 +381,18 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
     const from = views[index];
     const to = views[index + 1];
     const lerp = THREE.MathUtils.lerp;
+    const heroBlend = hasHero ? 1 - THREE.MathUtils.smoothstep(journey, 0.05, 0.95) : 0;
+    uniforms.uHeroBlend.value = heroBlend;
+    uniforms.uAssembly.value = paused ? 1 : THREE.MathUtils.smoothstep(elapsed, 0, 4.5);
     group.position.set(lerp(from.x, to.x, mix) * (compact.matches ? 0.28 : camera.aspect / 1.85), compact.matches ? 2 : lerp(from.y, to.y, mix), 0);
     group.rotation.set(lerp(from.tilt, to.tilt, mix) + easedPointer.y * 0.12, elapsed * 0.04 + easedPointer.x * 0.12, lerp(from.roll, to.roll, mix));
     group.scale.setScalar(lerp(from.scale, to.scale, mix) * (compact.matches ? 0.63 : 1));
+    group.position.x = lerp(group.position.x, compact.matches ? 0.15 : camera.aspect * 2.55, heroBlend);
+    group.position.y = lerp(group.position.y, compact.matches ? 2.3 : 0.5, heroBlend);
+    group.rotation.x = lerp(group.rotation.x, 0.38 + easedPointer.y * 0.12, heroBlend);
+    group.rotation.y = lerp(group.rotation.y, -0.25 + easedPointer.x * 0.3 + Math.sin(elapsed * .16) * .07, heroBlend);
+    group.rotation.z = lerp(group.rotation.z, -0.08, heroBlend);
+    group.scale.setScalar(lerp(group.scale.x, compact.matches ? 0.92 : 1.35, heroBlend));
     uniforms.uExplosion.value = lerp(from.explosion, to.explosion, mix) + Math.sin(mix * Math.PI) * (from.shape !== to.shape ? 1.25 : 0.3);
     uniforms.uShape.value = lerp(from.shape, to.shape, mix);
     uniforms.uDemoBlend.value = lerp(uniforms.uDemoBlend.value, targetDemoBlend, easing);
@@ -352,6 +416,8 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
     canvas.dataset.shape = uniforms.uShape.value.toFixed(2);
     canvas.dataset.explosion = uniforms.uExplosion.value.toFixed(2);
     canvas.dataset.orbFormation = gathering.toFixed(2);
+    canvas.dataset.heroBlend = heroBlend.toFixed(2);
+    canvas.dataset.assembly = uniforms.uAssembly.value.toFixed(2);
   }
   function updateLoop() {
     renderer.setAnimationLoop(null);
@@ -411,6 +477,7 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
       canvas.removeEventListener("webglcontextrestored", contextRestored);
       geometry.dispose(); material.dispose(); fieldGeometry.dispose(); fieldMaterial.dispose();
       tailGeometry.dispose(); tailMaterial.dispose();
+      threadGeometry.dispose(); threadMaterial.dispose();
       renderer.dispose(); renderer.forceContextLoss();
     },
   };
