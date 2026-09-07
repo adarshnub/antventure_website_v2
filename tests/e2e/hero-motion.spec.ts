@@ -22,6 +22,6 @@ test("hero sculpture has a static accessible fallback", async ({ browser }) => {
   await page.goto("http://127.0.0.1:3000/");
   await expect(page.getByRole("img", { name: /Three independent streams/ })).toBeVisible();
   await expect(page.locator(".hero-weave-fallback")).toHaveCSS("opacity", "0.9");
-  await expect(page.locator(".hero-weave-fallback polyline")).toHaveCount(54);
+  await expect(page.locator(".hero-weave-fallback path")).toHaveCount(8);
   await context.close();
 });

@@ -1,0 +1,6 @@
+Brain particle surface: BodyParts3D, © The Database Center for Life Science licensed under CC Attribution 4.0 International.
+License: https://creativecommons.org/licenses/by/4.0/
+Publisher license: https://dbarchive.biosciencedbc.jp/en/bodyparts3d/lic.html
+Source mesh mirror: https://github.com/ssrpw2/brain-atlas/tree/main/brain_obj
+Adaptations by Ant Venture: selected outer cortex/cerebellum/brainstem, reoriented, normalized, sampled into 30,000 particles and quantized. Decorative connecting sparks are artistic, not a scientific simulation of neural pathways.
+The UT Southwestern reference image is not redistributed or used as a site asset.

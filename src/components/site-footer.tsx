@@ -38,7 +38,7 @@ export function SiteFooter() {
       <nav className="shell portfolio-footer-products" aria-label="Products">{products.map((product) => <Link key={product.slug} href={`/products/${product.slug}`}>{product.name}{product.flagship ? " · Flagship" : ""}</Link>)}</nav>
       <div className="shell footer-bottom">
         <span>© {new Date().getFullYear()} AntVenture Consults LLC</span>
-        <span className="footer-legal"><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></span>
+        <span className="footer-legal"><a href="/brain-attribution.txt">3D attribution</a><Link href="/privacy">Privacy</Link><Link href="/terms">Terms</Link></span>
       </div>
     </footer>
   );

@@ -1,15 +1,16 @@
-import { brainPoint } from "@/lib/brain-shape";
+import { brainPoint, brainNormal } from "@/lib/brain-shape";
 
-/** Deterministic folded-brain projection, visible without JavaScript or WebGL. */
+/** The same anatomical surface projected for no-JavaScript / no-WebGL visitors. */
 export function HeroWeaveFallback() {
+  const paths = Array.from({ length: 8 }, () => "");
+  for (let i = 0; i < 6000; i++) {
+    const [x,y,z] = brainPoint(i,6000);
+    const normal = brainNormal(i,6000);
+    if(normal[2]<0) continue;
+    const light = Math.max(0,Math.min(7,Math.floor((normal[2]+normal[1]*.5)*5)));
+    paths[light] += `M${(300+x*112-z*12).toFixed(1)} ${(320-y*112+z*9).toFixed(1)}h.5 `;
+  }
   return <svg className="hero-weave-fallback" viewBox="0 0 600 700" aria-hidden="true">
-    {Array.from({ length: 54 }, (_, row) => {
-      const side = row % 2;
-      const points = Array.from({ length: 180 }, (_, column) => {
-        const [x, y, z] = brainPoint(Math.floor(row / 2) * 360 + column * 2 + side, 9720);
-        return `${(300 + x * 110 + z * 15).toFixed(2)},${(320 - y * 110 + z * 26).toFixed(2)}`;
-      });
-      return <polyline key={row} points={points.join(" ")} fill="none" stroke={row % 2 ? "#a1f6de" : "#a9caff"} strokeWidth="1.1" opacity=".65" />;
-    })}
+    {paths.map((d,i)=><path key={i} d={d} fill="none" stroke="#67e9ed" strokeWidth="1.4" strokeLinecap="round" opacity={.2+i*.1}/>)}
   </svg>;
 }

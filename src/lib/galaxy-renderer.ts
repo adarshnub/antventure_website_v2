@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { brainPoint } from "./brain-shape";
+import { brainPoint, brainNormal } from "./brain-shape";
 
 // All stars share a geometry and shader. Scroll/cursor change uniforms, not buffers.
 const vertexShader = `
@@ -20,6 +20,8 @@ const vertexShader = `
   attribute vec3 aOrb;
   attribute vec3 aWeave;
   attribute vec3 aBrain;
+  attribute vec3 aBrainNormal;
+  attribute vec3 aBrainNext;
   attribute float aSize;
   attribute float aSeed;
   varying vec3 vColor;
@@ -41,6 +43,9 @@ const vertexShader = `
     vec3 signalPath = mix(source, aBrain, smoothstep(0.0, 1.0, t));
     signalPath.z += sin(t * 3.14159) * 1.2;
     contribution = mix(contribution, signalPath, incoming);
+    float spark = step(0.94, aSeed) * (1.0 - step(0.965, aSeed));
+    float sparkPhase = fract(uTime * 0.48 + aSeed * 163.0);
+    contribution = mix(contribution, mix(aBrain, aBrainNext, sparkPhase), spark * join);
     p = mix(p, contribution, uHeroBlend);
     // Staggered spiral paths read as individual arrivals, not a shrinking object.
     // Reversing scroll reverses these same paths back into the galaxy.
@@ -59,7 +64,7 @@ const vertexShader = `
     vec3 destination = mix(aOrb, feed, feeder * smoothstep(0.65, 1.0, uDemoBlend));
     p = mix(p, spiral, sin(arrival * 3.14159));
     p = mix(p, destination, arrival);
-    p.y += sin(uTime * 0.65 + aSeed * 6.28 + length(p.xz)) * 0.09;
+    p.y += sin(uTime * 0.65 + aSeed * 6.28 + length(p.xz)) * mix(0.09, 0.008, uHeroBlend);
     float orbit = uTime * 0.055 / (0.7 + length(position.xz) * 0.24) * (1.0 - uHeroBlend);
     p.xz = mat2(cos(orbit), -sin(orbit), sin(orbit), cos(orbit)) * p.xz;
     vec4 view = modelViewMatrix * vec4(p, 1.0);
@@ -73,17 +78,20 @@ const vertexShader = `
     gl_Position = projectionMatrix * view;
     gl_PointSize = clamp(aSize * uRatio * (14.0 / max(3.0, -view.z)) * (1.0 + influence * 0.5), 1.5, 18.0);
     gl_PointSize *= mix(1.0, 0.48, uDemoBlend);
-    gl_PointSize *= mix(1.0, 0.95, uHeroBlend);
+    gl_PointSize *= mix(1.0, 1.12 + spark * 1.4, uHeroBlend);
     vColor = mix(color, vec3(0.3, 0.95, 0.72), uDemoBlend * 0.8);
     vec3 threadColor = mix(vec3(0.28,0.86,0.8), vec3(0.65,0.72,1.0), step(0.5,family));
     threadColor = mix(threadColor, vec3(1.0,0.73,0.4), step(1.5,family));
-    vec3 cortexColor = mix(vec3(0.35,0.68,1.0), vec3(0.4,1.0,0.8), step(0.0,aBrain.x));
+    vec3 cortexColor = mix(vec3(0.18,0.46,1.0), vec3(0.3,1.0,0.88), smoothstep(-1.8,1.8,aBrain.y));
     vColor = mix(vColor, mix(threadColor, cortexColor, join), uHeroBlend);
     vLight = (0.76 + 0.24 * sin(aSeed * 120.0 + uTime * (0.6 + aSeed))) * (1.0 + influence * 0.7);
     vLight *= mix(1.0, 0.45 + step(0.8, aSeed) * 0.65, uDemoBlend);
     vLight *= mix(1.0, sin(phase * 3.14159) * 1.6, feeder * uDemoBlend);
     float neuralPulse = pow(sin(aBrain.y * 3.0 + aBrain.x * 2.0 - uTime * 2.2) * 0.5 + 0.5, 12.0);
-    vLight *= mix(1.0, 0.8 + neuralPulse * 1.4, uHeroBlend);
+    vec3 cortexNormal = normalize(normalMatrix * aBrainNormal);
+    float facing = smoothstep(-0.15,0.45,cortexNormal.z);
+    float illumination = 0.18 + pow(max(0.0,dot(cortexNormal,normalize(vec3(-0.5,0.8,1.0)))), 2.0) * 2.0;
+    vLight *= mix(1.0, max(0.3,facing) * illumination * (0.95 + neuralPulse * 0.5) + spark * 2.0 * sin(sparkPhase * 3.14159), uHeroBlend);
     vLight *= mix(1.0, sin(t * 3.14159), incoming * uHeroBlend);
   }
 `;
@@ -139,6 +147,8 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
   const orb = new Float32Array(count * 3);
   const weave = new Float32Array(count * 3);
   const brain = new Float32Array(count * 3);
+  const brainNormals = new Float32Array(count * 3);
+  const brainNext = new Float32Array(count * 3);
   const colors = new Float32Array(count * 3);
   const sizes = new Float32Array(count);
   const seeds = new Float32Array(count);
@@ -151,6 +161,7 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
     weave[i * 3 + 1] = Math.floor(i / 90) / Math.ceil(count / 90);
     weave[i * 3 + 2] = Math.sin(i * 15.37);
     brain.set(brainPoint(i, count), i * 3);
+    brainNormals.set(brainNormal(i, count), i * 3);
     const r = Math.pow(random(), 1.6) * 5.4 + 0.025;
     const arm = i % 4;
     const spread = Math.pow(random(), 2.5) * (random() < 0.5 ? -1 : 1);
@@ -202,6 +213,8 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
   geometry.setAttribute("aOrb", new THREE.BufferAttribute(orb, 3));
   geometry.setAttribute("aWeave", new THREE.BufferAttribute(weave, 3));
   geometry.setAttribute("aBrain", new THREE.BufferAttribute(brain, 3));
+  geometry.setAttribute("aBrainNormal", new THREE.BufferAttribute(brainNormals, 3));
+  geometry.setAttribute("aBrainNext", new THREE.BufferAttribute(brainNext, 3));
   geometry.setAttribute("aSize", new THREE.BufferAttribute(sizes, 1));
   geometry.setAttribute("aSeed", new THREE.BufferAttribute(seeds, 1));
   const uniforms = {
@@ -214,19 +227,29 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
   stars.frustumCulled = false;
   group.add(stars);
 
-  // Sparse cortical contours reinforce the folds without another model asset.
-  // Shared attributes, one extra draw call, no per-frame geometry uploads.
+  // Local neural connections, computed once. The sparks traverse these same edges.
   const threadGeometry = new THREE.BufferGeometry();
   for (const [name, attribute] of Object.entries(geometry.attributes)) threadGeometry.setAttribute(name, attribute);
   const threadIndices: number[] = [];
-  for (let i = 0; i + 2 < count; i++) {
-    if (Math.floor(i / 360) % 5 === 0 && Math.floor(i / 2) % 180 < 179 && seeds[i] < .965 && seeds[i + 2] < .965) threadIndices.push(i, i + 2);
+  brainNext.set(brain);
+  for (let i = 0; i < count; i++) {
+    if (i >= 650 && (seeds[i] < .94 || seeds[i] >= .965)) continue;
+    let nearest = -1, distance = .85 * .85;
+    for (let j = 0; j < 650; j++) {
+      if (j === i || seeds[j] >= .94) continue;
+      const d = (brain[i*3]-brain[j*3])**2 + (brain[i*3+1]-brain[j*3+1])**2 + (brain[i*3+2]-brain[j*3+2])**2;
+      if (d > .08 && d < distance) { nearest=j; distance=d; }
+    }
+    if (nearest >= 0) {
+      brainNext.set(brain.subarray(nearest*3,nearest*3+3), i*3);
+      if (seeds[i] < .94) threadIndices.push(i,nearest);
+    }
   }
   threadGeometry.setIndex(threadIndices);
   const threadMaterial = new THREE.ShaderMaterial({
     uniforms, vertexShader, vertexColors: true, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending,
     fragmentShader: `uniform float uHeroBlend; varying vec3 vColor; varying float vLight;
-      void main(){ gl_FragColor=vec4(vColor * 1.15, min(vLight,1.0) * 0.3 * uHeroBlend); }`,
+      void main(){ gl_FragColor=vec4(vColor * 1.15, min(vLight,1.0) * 0.18 * uHeroBlend); }`,
   });
   const threads = new THREE.LineSegments(threadGeometry, threadMaterial);
   threads.frustumCulled = false;
@@ -389,9 +412,9 @@ export function createGalaxy(canvas: HTMLCanvasElement, main: HTMLElement) {
     group.scale.setScalar(lerp(from.scale, to.scale, mix) * (compact.matches ? 0.63 : 1));
     group.position.x = lerp(group.position.x, compact.matches ? 0.15 : camera.aspect * 2.55, heroBlend);
     group.position.y = lerp(group.position.y, compact.matches ? 2.3 : 0.5, heroBlend);
-    group.rotation.x = lerp(group.rotation.x, 0.38 + easedPointer.y * 0.12, heroBlend);
-    group.rotation.y = lerp(group.rotation.y, -0.25 + easedPointer.x * 0.3 + Math.sin(elapsed * .16) * .07, heroBlend);
-    group.rotation.z = lerp(group.rotation.z, -0.08, heroBlend);
+    group.rotation.x = lerp(group.rotation.x, 0.08 + easedPointer.y * 0.10, heroBlend);
+    group.rotation.y = lerp(group.rotation.y, -0.12 + easedPointer.x * 0.20 + Math.sin(elapsed * .16) * .04, heroBlend);
+    group.rotation.z = lerp(group.rotation.z, -0.035, heroBlend);
     group.scale.setScalar(lerp(group.scale.x, compact.matches ? 0.92 : 1.35, heroBlend));
     uniforms.uExplosion.value = lerp(from.explosion, to.explosion, mix) + Math.sin(mix * Math.PI) * (from.shape !== to.shape ? 1.25 : 0.3);
     uniforms.uShape.value = lerp(from.shape, to.shape, mix);

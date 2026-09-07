@@ -6,7 +6,7 @@ import { HeroWeaveFallback } from "@/components/hero-weave-fallback";
 export function HomeHero() {
   return (
     <section className="home-hero" aria-labelledby="home-hero-title">
-      <div className="hero-sculpture" role="img" aria-label="Three independent streams representing people, process and AI assemble into a collective AI brain with two folded hemispheres."><HeroWeaveFallback /></div>
+      <div className="hero-sculpture" role="img" aria-label="Three independent streams representing people, process and AI assemble into a side-view particle brain with organic cortical folds and travelling neural sparks."><HeroWeaveFallback /></div>
       <div className="shell home-hero-shell">
         <p className="eyebrow">Ant Venture / AI transformation</p>
         <h1 id="home-hero-title">Collective Intelligence,<br /><em>Engineered for Growth</em></h1>
